@@ -8,8 +8,6 @@ const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character =>
   '"': '&quot;',
   "'": '&#39;'
 } [character]));
-const uiText = value => String(value ?? '').replace(/[\u3002\uff0e]/g, '');
-const escapeUi = value => escapeHtml(uiText(value));
 const money = value => Number(value || 0).toLocaleString('zh-CN', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
@@ -85,18 +83,80 @@ const statuses = {
   left: '离职'
 };
 const abilities = ['能力完好', '轻度失能', '中度失能', '重度失能'];
+const auditEntities = {
+  order: '服务订单',
+  claim: '补贴申报',
+  elderly: '老人档案',
+  worker: '护工',
+  shift: '排班',
+  assessment: '能力评估',
+  plan: '照护计划',
+  emergency: '应急事件',
+  quality: '质量抽查',
+  policy: '补贴政策',
+  work_log: '工时记录',
+  scheduler: '系统任务',
+  notification: '通知记录',
+  user: '用户',
+  community: '社区',
+  agency: '服务机构'
+};
+const auditActions = {
+  create: '新建',
+  update: '修改',
+  delete: '删除',
+  authorize: '授权变更',
+  status: '状态调整',
+  cancel: '取消',
+  reschedule: '改约',
+  dispatch: '派单',
+  complete: '完成',
+  submit: '提交',
+  pay: '拨付',
+  review: '复核',
+  inspect: '抽查',
+  approve: '审核通过',
+  reject: '审核驳回',
+  return: '退回',
+  complaint: '投诉处理',
+  exception: '转异常',
+  resume: '恢复',
+  terminate: '终止',
+  respond: '响应',
+  arrive: '到场',
+  close: '关闭',
+  maintenance: '维护执行',
+  tick: '系统轮询'
+};
+const auditActionTone = {
+  create: 'success',
+  complete: 'success',
+  pay: 'success',
+  approve: 'success',
+  dispatch: 'info',
+  submit: 'info',
+  review: 'info',
+  inspect: 'info',
+  respond: 'info',
+  arrive: 'info',
+  cancel: 'danger',
+  terminate: 'danger',
+  exception: 'danger',
+  reject: 'danger',
+  delete: 'danger'
+};
 const staff = ['admin', 'community', 'agency', 'worker', 'street', 'civil'];
 const sections = {
   overview: {
     title: '服务总览',
-    symbol: '◈',
-    description: '让每一份照护，都有清晰的进展',
+    symbol: '01',
+    description: '在册老人、服务订单、补贴与待办汇总',
     roles: Object.keys(roles)
   },
   elders: {
     title: '老人档案',
-    symbol: '♧',
-    description: '管理档案、授权联系人、能力评估与照护计划',
+    symbol: '02',
+    description: '老人档案、联系人、能力评估与照护计划',
     roles: Object.keys(roles),
     columns: [
       ['id', '档案编号'],
@@ -110,8 +170,8 @@ const sections = {
   },
   orders: {
     title: '服务订单',
-    symbol: '▤',
-    description: '从预约、派单到确认结算，查看每一次服务的完整记录',
+    symbol: '03',
+    description: '预约、派单、服务确认与结算记录',
     roles: Object.keys(roles),
     columns: [
       ['id', '订单编号'],
@@ -125,8 +185,8 @@ const sections = {
   },
   workers: {
     title: '护工管理',
-    symbol: '♙',
-    description: '维护服务人员资质，查看累计工时与服务评价',
+    symbol: '04',
+    description: '护工资质、在岗状态、工时与评价',
     roles: staff,
     columns: [
       ['id', '护工编号'],
@@ -140,8 +200,8 @@ const sections = {
   },
   shifts: {
     title: '排班管理',
-    symbol: '▦',
-    description: '按可服务时段发布班次，名额随派单和释放同步更新',
+    symbol: '05',
+    description: '班次、可接单量与剩余名额',
     roles: staff,
     columns: [
       ['id', '班次编号'],
@@ -156,8 +216,8 @@ const sections = {
   },
   hours: {
     title: '工时复核',
-    symbol: '◷',
-    description: '核对异常签到、围栏和服务时段，记录工时认定依据',
+    symbol: '06',
+    description: '签到签退、围栏校验与工时复核',
     roles: staff,
     columns: [
       ['id', '工时编号'],
@@ -171,8 +231,8 @@ const sections = {
   },
   vitals: {
     title: '健康监测',
-    symbol: '♡',
-    description: '按采集时间保留体征归属，核实异常并安排后续处置',
+    symbol: '07',
+    description: '体征采集、阈值告警与核实处置',
     roles: Object.keys(roles),
     columns: [
       ['id', '数据编号'],
@@ -187,8 +247,8 @@ const sections = {
   },
   events: {
     title: '应急响应',
-    symbol: '⚑',
-    description: '记录求助、响应与到场，让处置过程持续可查',
+    symbol: '08',
+    description: '求助登记、响应到场与处置结果',
     roles: Object.keys(roles),
     columns: [
       ['id', '事件编号'],
@@ -202,8 +262,8 @@ const sections = {
   },
   claims: {
     title: '补贴申报',
-    symbol: '￥',
-    description: '按自然月归集服务，街道初审、民政终审后登记拨付',
+    symbol: '09',
+    description: '按月归集、审核与补贴拨付',
     roles: Object.keys(roles),
     columns: [
       ['id', '申报编号'],
@@ -217,8 +277,8 @@ const sections = {
   },
   quality: {
     title: '质量监管',
-    symbol: '✓',
-    description: '记录服务抽查与整改，监管复核后恢复接单资格',
+    symbol: '10',
+    description: '服务抽查、整改与接单资格恢复',
     roles: staff,
     columns: [
       ['id', '抽查编号'],
@@ -232,8 +292,8 @@ const sections = {
   },
   notifications: {
     title: '通知记录',
-    symbol: '✉',
-    description: '查看应急通知的模拟发送与重试结果',
+    symbol: '11',
+    description: '应急通知的发送与重试记录',
     roles: ['admin', 'community', 'street', 'civil'],
     columns: [
       ['id', '通知编号'],
@@ -246,14 +306,14 @@ const sections = {
   },
   audit: {
     title: '操作留痕',
-    symbol: '≡',
-    description: '按业务对象追溯关键操作、处理原因和操作人员',
+    symbol: '12',
+    description: '关键操作、处理原因与操作人追溯',
     roles: ['admin', 'community', 'agency', 'street', 'civil'],
     columns: [
       ['id', '记录编号'],
-      ['entity', '业务对象'],
+      ['entity', '业务对象', 'entity'],
       ['entity_id', '对象编号'],
-      ['action', '操作'],
+      ['action', '操作类型', 'action'],
       ['actor_name', '操作人'],
       ['detail', '说明'],
       ['created_at', '记录时间', 'date']
@@ -261,36 +321,28 @@ const sections = {
   },
 };
 
-// Presentation groups only; sections remains the source of role permissions.
-const navigationGroups = [
-  { title: '老人档案与评估', icon: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8 M20 8v6 M17 11h6', children: ['elders'] },
-  { title: '服务下单与派单', icon: 'M9 5H5v16h14V5h-4 M9 3h6v4H9z M8 12h8 M8 16h5', children: ['orders'] },
-  { title: '护工与排班', icon: 'M4 5h16v16H4z M8 3v4 M16 3v4 M4 10h16 M8 14h2 M14 14h2 M8 18h2', children: ['workers', 'shifts', 'hours'] },
-  { title: '健康监测与应急', icon: 'M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8 M3 12h5l2-4 4 8 2-4h5', children: ['vitals', 'events'] },
-  { title: '补贴与质量监管', icon: 'M12 3 3 7l9 4 9-4-9-4z M3 12l9 4 9-4 M3 17l9 4 9-4', children: ['claims', 'quality'] },
-  { title: '通知与操作记录', icon: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9 M10 21h4', children: ['notifications', 'audit'] }
+const navGroups = [
+  ['工作台', ['overview']],
+  ['档案与业务', ['elders', 'orders', 'claims']],
+  ['服务队伍', ['workers', 'shifts', 'hours', 'quality']],
+  ['健康安全', ['vitals', 'events']],
+  ['系统管理', ['notifications', 'audit']]
 ];
-const navigationLabels = {
-  '老人档案与评估': '档案评估',
-  '服务下单与派单': '服务派单',
-  '护工与排班': '护工排班',
-  '健康监测与应急': '健康应急',
-  '补贴与质量监管': '补贴监管',
-  '通知与操作记录': '通知与记录'
-};
-const navigationIcon = path => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg>`;
 
-function renderNavigation() {
-  const leaf = key => `<a class="nav-item" href="#${key}" data-section="${key}" title="${sections[key].title}"><span>${sections[key].title}</span></a>`;
-  const overviewIcon = navigationIcon('M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z');
-  const overview = sections.overview.roles.includes(user.role)
-    ? `<a class="nav-item nav-home" href="#overview" data-section="overview">${overviewIcon}<span>${sections.overview.title}</span></a>` : '';
-  $('#navigation').innerHTML = overview + navigationGroups.map(group => {
-    const children = group.children.filter(key => sections[key].roles.includes(user.role));
-    if (!children.length) return '';
-    return `<details class="nav-section"><summary title="${group.title}">${navigationIcon(group.icon)}<span>${navigationLabels[group.title] || group.title}</span><svg class="nav-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m5 6 3 3 3-3"/></svg></summary><div class="nav-children">${children.map(leaf).join('')}</div></details>`;
-  }).join('');
-}
+const NAV_ICONS = {
+  overview: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  elders: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  orders: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/>',
+  workers: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20v-1.5A3.5 3.5 0 0 1 6.5 15h5A3.5 3.5 0 0 1 15 18.5V20"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2A3 3 0 0 1 21 17v3"/>',
+  shifts: '<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h3v3H8z"/>',
+  hours: '<circle cx="12" cy="13" r="8"/><path d="M12 13V9M12 13l3 2"/><path d="M9 2h6"/>',
+  vitals: '<path d="M3 12h4l2-6 4 12 2-6h6"/>',
+  events: '<path d="M12 3 2.5 20h19L12 3z"/><path d="M12 9v5M12 17h.01"/>',
+  claims: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+  quality: '<path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"/><path d="m9 12 2 2 4-4"/>',
+  notifications: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M10 20h4"/>',
+  audit: '<path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-3"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M8 11h8M8 15h8M8 19h5"/>'
+};
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -315,7 +367,7 @@ const post = (path, data = {}) => api(path, {
 const allowed = (...values) => values.includes(user.role);
 
 function toast(message) {
-  $('#toast').textContent = uiText(message);
+  $('#toast').textContent = message;
   $('#toast').hidden = false;
   setTimeout(() => $('#toast').hidden = true, 4000);
 }
@@ -335,13 +387,21 @@ async function start() {
   $('#workspace').hidden = false;
   $('#user-label').textContent = `${roles[user.role]} · ${user.username}`;
   $('#avatar').textContent = roles[user.role][0];
-  $('#today').textContent = new Date().toLocaleDateString('zh-CN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    weekday: 'long'
-  });
-  renderNavigation();
+  const now = new Date();
+  $('#today').textContent =
+    `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 星期${'日一二三四五六'[now.getDay()]}`;
+  $('#navigation').innerHTML = navGroups.map(([group, keys]) => {
+    const items = keys.map(key => [key, sections[key]])
+      .filter(([, meta]) => meta && meta.roles.includes(user.role));
+    if (!items.length) return '';
+    return `<div class="nav-group">${group}</div>` +
+      items.map(([key, meta]) => {
+        const icon = NAV_ICONS[key]
+          ? `<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NAV_ICONS[key]}</svg>`
+          : '';
+        return `<a class="nav-item" href="#${key}" data-section="${key}" title="${meta.title}">${icon}<span>${meta.title}</span></a>`;
+      }).join('');
+  }).join('');
   await navigate();
 }
 
@@ -353,30 +413,34 @@ function badge(value, kind = '') {
   const color = warning.includes(value) ? 'warning' : neutral.includes(value) ? 'neutral' : error
     .includes(value) ? 'error' : ['serving', 'handling', 'accepted'].includes(value) ? 'blue' : '';
   const label = kind === 'quality' && value === 'open' ? '待整改' : statuses[value] || value || '—';
-  return `<span class="badge ${color}">${escapeUi(label)}</span>`;
+  return `<span class="badge ${color}">${escapeHtml(label)}</span>`;
 }
 
-function cell(row, key, type, fullText = false) {
+function cell(row, key, type) {
   const value = row[key];
   if (value === null || value === undefined) return '<span class="muted">—</span>';
   if (type === 'badge' || type === 'quality') return badge(value, type);
   if (type === 'money') return '¥ ' + money(value);
-  if (type === 'date') return escapeUi(dateText(value));
-  if (type === 'month') return escapeUi(value.slice(0, 7));
-  if (type === 'ability') return escapeUi(abilities[value]);
+  if (type === 'date') return escapeHtml(dateText(value));
+  if (type === 'month') return escapeHtml(value.slice(0, 7));
+  if (type === 'ability') return escapeHtml(abilities[value]);
+  if (type === 'entity') return `<span class="audit-entity">${escapeHtml(auditEntities[value] || value)}</span>`;
+  if (type === 'action') {
+    const tone = auditActionTone[value] ? ` is-${auditActionTone[value]}` : '';
+    return `<span class="audit-action${tone}">${escapeHtml(auditActions[value] || value)}</span>`;
+  }
   if (type === 'yes') return value ? '通过' : '未通过';
   if (type === 'metric') return {
     systolic: '收缩压',
     pulse: '脉搏',
     temperature: '体温'
-  } [value] || escapeUi(value);
+  } [value] || escapeHtml(value);
   if (key === 'id') return `<strong>#${String(value).padStart(4,'0')}</strong>`;
-  const text = String(value);
-  return escapeUi(fullText || text.length <= 38 ? text : text.slice(0, 38) + '…');
+  return escapeHtml(String(value).length > 38 ? String(value).slice(0, 38) + '…' : value);
 }
 
 function tableMarkup(rows, columns, kind) {
-  return `<table><thead><tr>${columns.map(c=>`<th>${c[1]}</th>`).join('')}<th>操作</th></tr></thead><tbody>${rows.map(row=>`<tr>${columns.map(c=>`<td>${cell(row,...[c[0],c[2]])}</td>`).join('')}<td><button class="row-button" data-kind="${kind}" data-id="${row.id}">查看详情 →</button></td></tr>`).join('')}</tbody></table>`;
+  return `<table><thead><tr>${columns.map(c=>`<th>${c[1]}</th>`).join('')}<th>操作</th></tr></thead><tbody>${rows.map(row=>`<tr>${columns.map(c=>`<td>${cell(row,...[c[0],c[2]])}</td>`).join('')}<td><button class="row-button" data-kind="${kind}" data-id="${row.id}">详情</button></td></tr>`).join('')}</tbody></table>`;
 }
 async function navigate() {
   const section = location.hash.slice(1) || 'overview';
@@ -389,14 +453,8 @@ async function navigate() {
     .section === activeSection));
   const meta = sections[activeSection];
   $('#page-title').textContent = meta.title;
-  $('#page-description').textContent = uiText(meta.description);
-  const group = navigationGroups.find(item => item.children.includes(activeSection));
-  document.querySelectorAll('.nav-section').forEach(item => {
-    const current = Boolean(item.querySelector('.nav-item.active'));
-    item.classList.toggle('current', current);
-    item.open = false;
-  });
-  $('#breadcrumb').textContent = group ? `${group.title} / ${meta.title}` : `服务工作台 / ${meta.title}`;
+  $('#page-description').textContent = meta.description;
+  $('#breadcrumb').textContent = '服务工作台 / ' + meta.title;
   $('#overview-content').hidden = activeSection !== 'overview';
   $('#list-content').hidden = activeSection === 'overview';
   $('#page-actions').replaceChildren();
@@ -418,8 +476,8 @@ async function renderList() {
   if (version !== renderVersion) return;
   currentRows = data.rows;
   $('#table-body').innerHTML = data.rows.length ? data.rows.map(row =>
-    `<tr>${meta.columns.map(c=>`<td>${cell(row,c[0],c[2])}</td>`).join('')}<td><button class="row-button" data-kind="${activeSection}" data-id="${row.id}">查看 →</button></td></tr>`
-    ).join('') : `<tr><td colspan="${meta.columns.length+1}" class="empty">当前范围内暂无记录</td></tr>`;
+    `<tr>${meta.columns.map(c=>`<td>${cell(row,c[0],c[2])}</td>`).join('')}<td><button class="row-button" data-kind="${activeSection}" data-id="${row.id}">详情</button></td></tr>`
+    ).join('') : `<tr><td colspan="${meta.columns.length+1}" class="empty"><div class="empty-state"><span class="empty-mark" aria-hidden="true">◌</span><p>${keyword ? '没有匹配「' + escapeHtml(keyword) + '」的记录' : '当前范围内暂无记录'}</p>${keyword ? '<button type="button" class="secondary empty-action" id="clear-search">清除搜索条件</button>' : ''}</div></td></tr>`;
   $('#result-count').textContent = `共 ${data.total} 条记录 · 每页 20 条`;
   $('#page-number').textContent = `${page} / ${Math.max(1,Math.ceil(data.total/20))}`;
   $('#previous').disabled = page === 1;
@@ -428,25 +486,70 @@ async function renderList() {
 }
 async function renderOverview() {
   const version = ++renderVersion;
-  const [summary, ordersData, eventsData] = await Promise.all([api('/api/dashboard'), api(
-    '/api/list/orders'), api('/api/list/events')]);
+  const [summary, ordersData] = await Promise.all([api('/api/dashboard'), api(
+    '/api/list/orders')]);
   if (version !== renderVersion) return;
+  const waiting = summary.orders.waiting || 0;
+  const due = summary.reassessment.length;
+  const todoTotal = summary.events + waiting + due;
   const stats = [
-    ['在册老人', summary.elders, '人', '当前授权范围内的服务对象', navigationIcon(navigationGroups[0].icon)],
+    ['在册老人', summary.elders, '人', '当前授权范围内的有效档案'],
     ['已完成服务', summary.orders.completed || 0, '单',
-      `累计服务金额 <span class="accent">¥ ${money(summary.orders.amount)}</span>`, navigationIcon('M5 12l4 4L19 6')
+      `累计结算 ¥ ${money(summary.orders.amount)}`
     ],
-    ['待调度与接单', summary.orders.waiting || 0, '单', '关注准入条件与接单进展', navigationIcon('M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18 M12 7v5l3 2')],
-    ['已核定补贴', money(summary.subsidy), '元', '包含终审通过与已拨付金额', navigationIcon('M6 4l6 7 6-7 M12 11v10 M6 12h12 M6 16h12')]
+    ['待调度与接单', waiting, '单', '待派单、待接单和待确认'],
+    ['已核定补贴', money(summary.subsidy), '元', '终审通过及已拨付金额']
   ];
-  const maximum = Math.max(1, ...summary.trend.map(t => t.orders));
+  const trendRows = summary.trend.map(t => {
+    const rate = t.orders ? Math.round(t.completed / t.orders * 100) : 0;
+    return `<tr><td>${escapeHtml(t.month)}</td><td class="num">${t.orders}</td>` +
+      `<td class="num">${t.completed}</td><td class="num">${rate}%</td></tr>`;
+  }).join('');
+  const totalOrders = summary.trend.reduce((sum, t) => sum + Number(t.orders || 0), 0);
+  const totalCompleted = summary.trend.reduce((sum, t) => sum + Number(t.completed || 0), 0);
+  const totalRate = totalOrders ? Math.round(totalCompleted / totalOrders * 100) : 0;
+  const trendTotal = summary.trend.length
+    ? `<tr class="total-row"><td>合计</td><td class="num">${totalOrders}</td>` +
+      `<td class="num">${totalCompleted}</td><td class="num">${totalRate}%</td></tr>`
+    : '';
   const recent = ordersData.rows.slice(0, 5);
   currentRows = recent;
-  $('#overview-content').innerHTML =
-    `<div class="stats-grid">${stats.map(([name,value,unit,note,icon])=>`<article class="stat-card"><div class="stat-label">${name}<span class="stat-icon">${icon}</span></div><div class="stat-value">${value}<small>${unit}</small></div><div class="stat-note">${note}</div></article>`).join('')}</div>
-    <div class="overview-grid"><section class="panel trend-panel"><div class="panel-heading"><h2>服务开展情况</h2><span>按预约月份统计</span></div><div class="chart">${summary.trend.map(t=>`<div class="chart-month"><div class="chart-bar secondary-bar" style="height:${Math.max(2,t.orders/maximum*75)}%"><span>${t.orders}</span></div><div class="chart-bar" style="height:${Math.max(2,t.completed/maximum*75)}%"><span>${t.completed}</span></div><small>${t.month}</small></div>`).join('')||'<p class="muted">暂无服务记录</p>'}</div><div class="legend"><span><i class="pale"></i>全部订单</span><span><i></i>已完成订单</span></div></section>
-    <section class="panel"><div class="panel-heading"><h2>今日关注</h2><span>服务待办</span></div><div class="todo-list"><a class="todo" href="#events"><span class="todo-icon">${navigationIcon(navigationGroups[3].icon)}</span><div class="todo-text"><p>持续跟进应急处置</p><small>响应、到场和处置结果及时记录</small></div><span class="count-pill">${summary.events}</span></a><a class="todo" href="#orders"><span class="todo-icon">${navigationIcon(navigationGroups[1].icon)}</span><div class="todo-text"><p>安排服务与跟进接单</p><small>资质、时段和名额同步核验</small></div><span class="count-pill">${summary.orders.waiting||0}</span></a><a class="todo" href="#elders"><span class="todo-icon">${navigationIcon(navigationGroups[0].icon)}</span><div class="todo-text"><p>评估到期与复评</p><small>${summary.reassessment.length?'查看近期到期的老人档案':'当前展示范围内暂无近期到期评估'}</small></div><span class="count-pill">${summary.reassessment.length}</span></a></div></section></div>
-    <section class="panel"><div class="table-toolbar"><h2>近期服务订单</h2><a class="inline-link" href="#orders">查看全部订单 →</a></div><div class="table-scroll">${recent.length?tableMarkup(recent,sections.orders.columns,'orders'):'<p class="empty">暂无订单</p>'}</div></section>`;
+  $('#overview-content').innerHTML = `
+    <section class="panel kpi-panel">
+      ${stats.map(([name, value, unit, note]) =>
+        `<div class="kpi"><div class="kpi-label">${name}</div>` +
+        `<div class="kpi-value">${value}<small>${unit}</small></div>` +
+        `<div class="kpi-note">${note}</div></div>`).join('')}
+    </section>
+    <div class="overview-grid">
+      <section class="panel">
+        <div class="panel-heading"><h2>待办事项</h2><span>共 ${todoTotal} 项</span></div>
+        <div class="table-scroll">
+          <table class="todo-table">
+            <thead><tr><th>事项</th><th>说明</th><th class="num">数量</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td>应急处置跟进</td><td>响应、到场和处置结果待记录</td><td class="num">${summary.events}</td><td><a class="inline-link" href="#events">处理</a></td></tr>
+              <tr><td>服务调度与接单</td><td>待派单、待接单和待确认的订单</td><td class="num">${waiting}</td><td><a class="inline-link" href="#orders">查看</a></td></tr>
+              <tr><td>评估到期与复评</td><td>七日内到期或尚未评估的老人档案</td><td class="num">${due}</td><td><a class="inline-link" href="#elders">查看</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-heading"><h2>服务量统计</h2><span>按预约月份</span></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>月份</th><th class="num">预约订单</th><th class="num">已完成</th><th class="num">完成率</th></tr></thead>
+            <tbody>${trendRows ? trendRows + trendTotal : '<tr><td colspan="4" class="empty">暂无服务记录</td></tr>'}</tbody>
+          </table>
+        </div>
+        <p class="panel-note">统计口径：按预约月份归集；完成率 = 已完成 ÷ 预约订单。</p>
+      </section>
+    </div>
+    <section class="panel">
+      <div class="panel-heading"><h2>近期服务订单</h2><a class="inline-link" href="#orders">查看全部</a></div>
+      <div class="table-scroll">${recent.length ? tableMarkup(recent, sections.orders.columns, 'orders') : '<p class="empty">暂无订单</p>'}</div>
+    </section>`;
   $('#workspace').dataset.section = 'overview';
 }
 
@@ -480,7 +583,7 @@ const textArea = (name, label, extra = {}) => field(name, label, 'textarea', {
 
 function showForm(title, fields, handler, description = '') {
   $('#form-title').textContent = title;
-  $('#form-description').textContent = uiText(description);
+  $('#form-description').textContent = description;
   $('#form-error').textContent = '';
   $('#form-fields').innerHTML = fields.map(f => {
     let input;
@@ -542,7 +645,7 @@ function topActions(kind) {
         min: 1,
         max: 720
       })
-    ], '/api/orders', '按次项目沿用标准时长；订单保存下单时的地址和价格', data => ({
+    ], '/api/orders', '按次项目沿用标准时长；订单保存下单时的地址和价格。', data => ({
       ...data,
       request_key: crypto.randomUUID()
     }))
@@ -571,7 +674,7 @@ function topActions(kind) {
       }), field('community_ids', '服务社区编号', 'text', {
         value: '1'
       })
-    ], '/api/workers', '项目和社区编号用英文逗号分隔', data => ({
+    ], '/api/workers', '项目和社区编号用英文逗号分隔。', data => ({
       ...data,
       item_ids: data.item_ids.split(',').map(Number),
       community_ids: data.community_ids.split(',').map(Number)
@@ -587,7 +690,7 @@ function topActions(kind) {
       ]), field('value', '指标值', 'number'), field('collected_at', '采集时间', 'datetime-local', {
         value: dateInput() + 'T09:00'
       })
-    ], '/api/vitals/batch', '按采集时刻的绑定记录确定老人归属', data => ({
+    ], '/api/vitals/batch', '按采集时刻的绑定记录确定老人归属。', data => ({
       records: [data]
     }))]);
   if (kind === 'vitals' && allowed('admin', 'community')) result.push(['设备换绑', () => routeForm('调整设备绑定',
@@ -614,9 +717,9 @@ function topActions(kind) {
       elderSelect(), itemSelect(), field('month', '结算月份首日', 'date', {
         value: previousMonth()
       }), textArea('evidence', '证明材料说明', {
-        value: '关联订单中的服务记录、确认信息、工时及评估计划'
+        value: '关联订单中的服务记录、确认信息、工时及评估计划。'
       })
-    ], '/api/claims', '同一老人、项目、月份只保留一份申报，重复请求返回原申报')]);
+    ], '/api/claims', '同一老人、项目、月份只保留一份申报，重复请求返回原申报。')]);
   if (kind === 'quality' && allowed('street', 'civil')) result.push(['＋ 服务抽查', () => qualityForm()]);
   if (kind === 'claims' && allowed('civil')) result.push(['发布政策', () => routeForm('发布补贴政策版本', [
     field('name', '政策名称'), itemSelect(), select('ability_level', '适用能力等级', abilities.map((label,
@@ -655,7 +758,7 @@ function eventForm(row) {
     [3, '三级 · 紧急响应']
   ], {
     value: 2
-  }), textArea('description', '求助情况')], '/api/events', '应急事件与照护计划是否有效独立处理', data => ({
+  }), textArea('description', '求助情况')], '/api/events', '应急事件与照护计划是否有效独立处理。', data => ({
     ...data,
     request_key: crypto.randomUUID(),
     vital_id: row?.id
@@ -682,7 +785,7 @@ function qualityForm() {
     optional: true
   }), field('restrict_agency', '限制整个机构', 'checkbox', {
     optional: true
-  })], '/api/quality', '无问题时保留问题与整改字段为空；有问题时填写整改要求和期限', data => ({
+  })], '/api/quality', '无问题时保留问题与整改字段为空；有问题时填写整改要求和期限。', data => ({
     ...data,
     order_id: Number(data.order_id)
   }));
@@ -696,59 +799,40 @@ async function detail(kind, id) {
   const meta = sections[kind];
   $('#detail-title').textContent = `${meta.title} #${String(id).padStart(4,'0')}`;
   $('#detail-body').innerHTML =
-    `<div class="detail-grid">${meta.columns.map(c=>`<div class="detail-item"><small>${c[1]}</small><span>${cell(row,c[0],c[2],true)}</span></div>`).join('')}</div>`;
+    `<div class="detail-grid">${meta.columns.map(c=>`<div class="detail-item"><small>${c[1]}</small><span>${cell(row,c[0],c[2])}</span></div>`).join('')}</div>`;
   $('#detail-actions').replaceChildren();
   if (kind === 'orders') {
     const result = await api(`/api/orders/${id}`);
     row = result.order;
     $('#detail-body').insertAdjacentHTML('beforeend',
-      `<div class="detail-section"><h3>服务地址与费用</h3><p>${escapeUi(row.address)}<br><span class="muted">成交单价 ¥ ${money(row.unit_price)} / ${row.price_unit==='hour'?'小时':'次'} · 预约 ${row.duration_minutes} 分钟</span></p></div><div class="detail-section"><h3>派单与服务记录</h3>${result.timeline.filter(t=>t.assignment_id).map(t=>`<div class="timeline-entry"><p><strong>${escapeUi(t.worker_name)}</strong> ${badge(t.assignment_status)} <span class="muted">派单 #${t.assignment_id}</span></p><small>派出 ${dateText(t.assigned_at)} · 接单 ${dateText(t.accepted_at)}</small><p>签到 ${dateText(t.checkin_at)} / 签退 ${dateText(t.checkout_at)} · 认定工时 ${t.valid_hours??'—'} 小时</p><p>${escapeUi(t.service_record||'尚未填写服务记录')}</p><small>服务确认 ${dateText(t.confirmed_at)}</small></div>`).join('')||'<p class="notice">等待社区安排护工</p>'}</div>`
+      `<div class="detail-section"><h3>服务地址与费用</h3><p>${escapeHtml(row.address)}<br><span class="muted">成交单价 ¥ ${money(row.unit_price)} / ${row.price_unit==='hour'?'小时':'次'} · 预约 ${row.duration_minutes} 分钟</span></p></div><div class="detail-section"><h3>派单与服务记录</h3>${result.timeline.filter(t=>t.assignment_id).map(t=>`<div class="timeline-entry"><p><strong>${escapeHtml(t.worker_name)}</strong> ${badge(t.assignment_status)} <span class="muted">派单 #${t.assignment_id}</span></p><small>派出 ${dateText(t.assigned_at)} · 接单 ${dateText(t.accepted_at)}</small><p>签到 ${dateText(t.checkin_at)} / 签退 ${dateText(t.checkout_at)} · 认定工时 ${t.valid_hours??'—'} 小时</p><p>${escapeHtml(t.service_record||'尚未填写服务记录')}</p><small>服务确认 ${dateText(t.confirmed_at)}</small></div>`).join('')||'<p class="notice">等待社区安排护工。</p>'}</div>`
       );
     if (result.costs) $('#detail-body').insertAdjacentHTML('beforeend',
       `<div class="detail-section"><h3>费用明细</h3><p>服务费用 ¥ ${money(result.costs.settlement)} · 核定补贴 ¥ ${money(result.costs.approved_subsidy)} · 当前自付 ¥ ${money(result.costs.payable)}</p></div>`
       );
     if (row.complaint) $('#detail-body').insertAdjacentHTML('beforeend',
-      `<div class="detail-section"><h3>投诉与处理</h3><p>${escapeUi(row.complaint)}</p><p>${escapeUi(row.complaint_result||'等待社区处理')}</p></div>`
+      `<div class="detail-section"><h3>投诉与处理</h3><p>${escapeHtml(row.complaint)}</p><p>${escapeHtml(row.complaint_result||'等待社区处理')}</p></div>`
       );
     orderActions(row);
   } else if (kind === 'elders') {
     const result = await api(`/api/elders/${id}`);
     $('#detail-body').insertAdjacentHTML('beforeend',
-      `<div class="detail-section"><h3>联系人与授权</h3>${result.contacts.map(c=>`<p>#${c.id} ${escapeUi(c.name)} · ${escapeUi(c.relationship)} · ${c.phone_mask} <span class="muted">授权终止 ${dateText(c.authorized_until)}</span></p>`).join('')}</div><div class="detail-section"><h3>能力评估记录</h3>${result.assessments.map(a=>`<p>${a.assessed_on} · ${a.scale} ${a.score} 分 · ${abilities[a.ability_level]} · 有效至 ${a.valid_until}</p>`).join('')||'<p class="notice">尚未登记评估</p>'}</div><div class="detail-section"><h3>照护计划</h3>${result.plans.map(p=>`<p>#${p.id} ${escapeUi(p.package_name)} ${badge(p.status)}<br><span class="muted">${p.starts_on} 至 ${p.ends_on} · 责任护工 #${p.worker_id}</span></p>`).join('')||'<p class="notice">尚未制定照护计划</p>'}</div>`
+      `<div class="detail-section"><h3>联系人与授权</h3>${result.contacts.map(c=>`<p>#${c.id} ${escapeHtml(c.name)} · ${escapeHtml(c.relationship)} · ${c.phone_mask} <span class="muted">授权终止 ${dateText(c.authorized_until)}</span></p>`).join('')}</div><div class="detail-section"><h3>能力评估记录</h3>${result.assessments.map(a=>`<p>${a.assessed_on} · ${a.scale} ${a.score} 分 · ${abilities[a.ability_level]} · 有效至 ${a.valid_until}</p>`).join('')||'<p class="notice">尚未登记评估。</p>'}</div><div class="detail-section"><h3>照护计划</h3>${result.plans.map(p=>`<p>#${p.id} ${escapeHtml(p.package_name)} ${badge(p.status)}<br><span class="muted">${p.starts_on} 至 ${p.ends_on} · 责任护工 #${p.worker_id}</span></p>`).join('')||'<p class="notice">尚未制定照护计划。</p>'}</div>`
       );
     if (allowed('admin', 'community')) {
-      action('登记评估', () => {
-        const fields = [
-          select('scale', '评估量表', [
-            ['ADL', 'ADL'],
-            ['MMSE', '简易智能状态']
-          ]),
-          field('score', '得分', 'number', {
-            value: 75,
-            min: 0,
-            max: 100
-          }),
-          select('ability_level', '能力等级', abilities.map((label, i) => [i, label])),
-          field('assessed_on', '评估日期', 'date', {
-            value: dateInput()
-          }),
-          field('valid_until', '有效期截止', 'date', {
-            value: dateInput(180)
-          })
-        ];
-        showForm('登记能力评估', fields, data => post(`/api/elders/${id}/assess`, data));
-        // 添加量表切换联动
-        const scaleSelect = $('#action-form [name="scale"]');
-        const scoreInput = $('#action-form [name="score"]');
-        scaleSelect.addEventListener('change', () => {
-          if (scaleSelect.value === 'MMSE') {
-            scoreInput.max = 30;
-            if (parseFloat(scoreInput.value) > 30) scoreInput.value = 30;
-          } else {
-            scoreInput.max = 100;
-          }
-        });
-      });
+      action('登记评估', () => routeForm('登记能力评估', [select('scale', '评估量表', [
+        ['ADL', 'ADL'],
+        ['MMSE', '简易智能状态']
+      ]), field('score', '得分', 'number', {
+        value: 75,
+        min: 0,
+        max: 100
+      }), select('ability_level', '能力等级', abilities.map((label, i) => [i, label])), field(
+        'assessed_on', '评估日期', 'date', {
+          value: dateInput()
+        }), field('valid_until', '有效期截止', 'date', {
+        value: dateInput(180)
+      })], `/api/elders/${id}/assess`));
       action('制定计划', () => routeForm('制定照护计划', [select('package_id', '服务包', options(lookups.packages)),
         workerSelect(), field('starts_on', '开始日期', 'date', {
           value: dateInput()
@@ -788,16 +872,8 @@ async function detail(kind, id) {
   } else if (kind === 'claims') {
     const result = await api(`/api/claims/${id}`);
     $('#detail-body').insertAdjacentHTML('beforeend',
-      `<div class="detail-section"><h3>申报明细</h3>${result.items.map(i=>`<p>订单 #${i.order_id} · ${escapeUi(i.policy_name)}<br><span class="muted">服务费 ¥ ${money(i.settlement)} · 补贴 ¥ ${money(i.amount)}</span></p>`).join('')}</div><div class="detail-section"><h3>历次审核</h3>${result.reviews.map(r=>`<p>${r.stage==='street'?'街道初审':'民政终审'} · ${escapeUi(r.reviewer_name)} · ${{approve:'通过',return:'退回',reject:'不通过'}[r.decision]}<br><span class="muted">${dateText(r.reviewed_at)} ${escapeUi(r.note)}</span></p>`).join('')||'<p class="notice">等待审核</p>'}</div>`
+      `<div class="detail-section"><h3>申报明细</h3>${result.items.map(i=>`<p>订单 #${i.order_id} · ${escapeHtml(i.policy_name)}<br><span class="muted">服务费 ¥ ${money(i.settlement)} · 补贴 ¥ ${money(i.amount)}</span></p>`).join('')}</div><div class="detail-section"><h3>历次审核</h3>${result.reviews.map(r=>`<p>${r.stage==='street'?'街道初审':'民政终审'} · ${escapeHtml(r.reviewer_name)} · ${{approve:'通过',return:'退回',reject:'不通过'}[r.decision]}<br><span class="muted">${dateText(r.reviewed_at)} ${escapeHtml(r.note)}</span></p>`).join('')||'<p class="notice">等待审核。</p>'}</div>`
       );
-    if (allowed('admin', 'community') && row.status === 'returned') action('重新提交申报', () => routeForm(
-      '补充材料并重新提交', [textArea('evidence', '补充证明材料说明', { value: row.evidence || '' })], 
-      `/api/claims`, '', data => ({
-        elderly_id: row.elderly_id,
-        item_id: row.item_id,
-        period: row.period,
-        evidence: data.evidence
-      })));
     if (allowed('street', 'civil') && row.status === user.role) action('审核申报', () => routeForm(
       '审核补贴申报', [select('decision', '审核结论', [
         ['approve', '通过'],
@@ -806,28 +882,20 @@ async function detail(kind, id) {
       ]), textArea('note', '审核意见')], `/api/claims/${id}/review`));
     if (allowed('civil') && row.status === 'approved') action('登记拨付', () => routeForm('登记补贴拨付', [field(
       'reference', '拨付凭证号')], `/api/claims/${id}/pay`));
-  } else if (kind === 'events' && allowed('admin', 'community', 'street', 'civil')) {
-    $('#detail-body').insertAdjacentHTML('beforeend',
-      `<div class="detail-section"><h3>处置进度</h3><p>响应人员：${escapeUi(row.responder_name || '待响应')}<br>响应时间：${dateText(row.responded_at)}<br>到场时间：${dateText(row.arrived_at)}<br>处置结果：${escapeUi(row.result || '处理中')}</p></div>`
-    );
-    if (row.status !== 'closed') {
-      if (!row.responded_at) action('记录响应', () => simpleAction(`/api/events/${id}/process`, {
-        action: 'respond'
+  } else if (kind === 'events' && allowed('admin', 'community', 'street', 'civil') && row.status !==
+    'closed') {
+    if (!row.responded_at) action('记录响应', () => simpleAction(`/api/events/${id}/process`, {
+      action: 'respond'
+    }));
+    if (row.responded_at && !row.arrived_at) action('记录到场', () => simpleAction(
+      `/api/events/${id}/process`, {
+        action: 'arrive'
       }));
-      if (row.responded_at && !row.arrived_at) action('记录到场', () => simpleAction(
-        `/api/events/${id}/process`, {
-          action: 'arrive'
-        }));
-      action('关闭事件', () => routeForm('填写处置结果', [textArea('result', '处置结果或误报说明')],
-        `/api/events/${id}/process`, '', data => ({
-          ...data,
-          action: 'close'
-        })));
-    }
-  } else if (kind === 'notifications' && allowed('admin', 'community', 'street', 'civil')) {
-    $('#detail-body').insertAdjacentHTML('beforeend',
-      `<div class="detail-section"><h3>发送详情</h3><p>失败原因：${escapeUi(row.error || '无')}<br>最近尝试时间：${dateText(row.last_attempt_at)}</p></div>`
-    );
+    action('关闭事件', () => routeForm('填写处置结果', [textArea('result', '处置结果或误报说明')],
+      `/api/events/${id}/process`, '', data => ({
+        ...data,
+        action: 'close'
+      })));
   } else if (kind === 'vitals' && row.abnormal && allowed('admin', 'community')) action('建立应急事件', () =>
     eventForm(row));
   else if (kind === 'workers' && allowed('admin', 'agency')) {
@@ -844,7 +912,7 @@ async function detail(kind, id) {
   } else if (kind === 'shifts' && allowed('admin', 'agency') && !row.used_slots) action('删除未使用班次',
   () => showForm('删除未使用班次', [], () => api(`/api/shifts/${id}`, {
       method: 'DELETE'
-    }), '确认删除此未使用班次；已有派单的班次会保留'));
+    }), '确认删除此未使用班次。已有派单的班次会保留。'));
   else if (kind === 'hours' && allowed('admin', 'agency')) action('复核工时', () => routeForm('核验异常工时', [
     field('hours', '认定工时（小时）', 'number', {
       min: 0.01
@@ -852,7 +920,7 @@ async function detail(kind, id) {
   ], `/api/hours/${id}/review`));
   else if (kind === 'quality') {
     $('#detail-body').insertAdjacentHTML('beforeend',
-      `<div class="detail-section"><p>整改要求：${escapeUi(row.requirement||'无')}<br>整改结果：${escapeUi(row.result||'尚未提交')}</p></div>`
+      `<div class="detail-section"><p>整改要求：${escapeHtml(row.requirement||'无')}<br>整改结果：${escapeHtml(row.result||'尚未提交')}</p></div>`
       );
     if (allowed('agency') && row.status === 'open') action('提交整改', () => routeForm('提交整改结果', [textArea(
       'result', '整改内容和证据')], `/api/quality/${id}/rectify`, '', data => ({
@@ -885,7 +953,7 @@ function orderActions(row) {
       .status)) action('推荐与派单', async () => {
     const candidates = (await api(`/api/orders/${id}/candidates`)).rows;
     if (!candidates.length) {
-      toast('暂无符合资质、区域与时段的护工，请先补齐评估、计划或排班');
+      toast('暂无符合资质、区域与时段的护工，请先补齐评估、计划或排班。');
       return;
     }
     routeForm('选择服务护工', [select('shift_id', '可用护工与班次', candidates.map(c => [c.shift_id,
@@ -911,7 +979,7 @@ function orderActions(row) {
     value: row.latitude,
     min: -90,
     max: 90
-  })], `/api/orders/${id}/checkin`, '签到时间由服务器记录，请填写实际位置'));
+  })], `/api/orders/${id}/checkin`, '签到时间由服务器记录，请填写实际位置。'));
   if (allowed('worker') && row.status === 'serving') action('签退并填写记录', () => routeForm('服务签退', [field(
     'longitude', '签退经度', 'number', {
       value: row.longitude,
@@ -923,7 +991,7 @@ function orderActions(row) {
     max: 90
   }), textArea('service_record', '实际服务内容')], `/api/orders/${id}/checkout`));
   if (allowed('family', 'elderly') && row.status === 'confirming') action('确认服务完成', () => showForm(
-      '确认本次服务', [], () => post(`/api/orders/${id}/confirm`, {}), '请核对服务记录、签到签退时间与服务内容，确认后保存当前账号及确认时间'
+      '确认本次服务', [], () => post(`/api/orders/${id}/confirm`, {}), '请核对服务记录、签到签退时间与服务内容，确认后保存当前账号及确认时间。'
       ));
   if (allowed('admin', 'community', 'agency') && row.status === 'confirming') action('核验并结算', () =>
     simpleAction(`/api/orders/${id}/finish`, {}));
@@ -940,7 +1008,7 @@ function orderActions(row) {
   }
   if (allowed('admin', 'community') && ['serving', 'confirming', 'exception'].includes(row.status))
     action('异常处理', () => routeForm('记录异常处理', [select('action', '处理动作', row.status === 'exception' ? [
-      ['resume', '恢复服务流程'],
+      ['resume', '恢复待确认'],
       ['terminate', '终止服务']
     ] : [
       ['exception', '转入异常处理']
@@ -952,21 +1020,11 @@ function orderActions(row) {
       [3, '3 分'],
       [2, '2 分'],
       [1, '1 分']
-    ], { value: row.rating || 5 }), textArea('feedback', '评价内容', {
-      optional: true,
-      value: row.feedback || ''
+    ]), textArea('feedback', '评价内容', {
+      optional: true
     }), textArea('complaint', '投诉内容', {
-      optional: true,
-      value: row.complaint || ''
-    })], `/api/orders/${id}/feedback`, '', data => {
-      const result = { ...data };
-      // 空字符串视为明确清空，未改动则不传递该字段
-      if (result.feedback === (row.feedback || '')) delete result.feedback;
-      else if (result.feedback === '') result.feedback = null;
-      if (result.complaint === (row.complaint || '')) delete result.complaint;
-      else if (result.complaint === '') result.complaint = null;
-      return result;
-    }));
+      optional: true
+    })], `/api/orders/${id}/feedback`));
   if (allowed('admin', 'community') && row.complaint) action('处理投诉', () => routeForm('记录投诉处理', [textArea(
     'reason', '处理结果')], `/api/orders/${id}/resolve`, '', data => ({
     ...data,
@@ -984,46 +1042,11 @@ $('#login-form').addEventListener('submit', async event => {
     await post('/api/login', data);
     await start();
   } catch (error) {
-    $('#login-error').textContent = uiText(error.message);
+    $('#login-error').textContent = error.message;
   } finally {
     button.disabled = false;
   }
 });
-// Mobile navigation changes presentation only.
-$('#menu-toggle').addEventListener('click', () => {
-  const expanded = $('.sidebar').classList.toggle('is-expanded');
-  $('#menu-toggle').setAttribute('aria-expanded', String(expanded));
-});
-// Header menus only change presentation; page permissions remain in sections.
-function closeHeaderMenus() {
-  document.querySelectorAll('.nav-section[open]').forEach(item => item.open = false);
-}
-function closeMobileNavigation() {
-  $('.sidebar').classList.remove('is-expanded');
-  $('#menu-toggle').setAttribute('aria-expanded', 'false');
-}
-document.addEventListener('click', event => {
-  const summary = event.target.closest('#navigation summary');
-  if (summary) {
-    document.querySelectorAll('.nav-section[open]').forEach(item => {
-      if (item !== summary.parentElement) item.open = false;
-    });
-    return;
-  }
-  if (event.target.closest('#navigation a') || !event.target.closest('#navigation')) closeHeaderMenus();
-  if (event.target.closest('#navigation a')) closeMobileNavigation();
-});
-document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape') return;
-  const summary = document.activeElement.closest('.nav-section')?.querySelector('summary');
-  closeHeaderMenus();
-  closeMobileNavigation();
-  if (summary) {
-    if (window.matchMedia('(max-width: 1100px)').matches) $('#menu-toggle').focus();
-    else summary.focus();
-  }
-});
-
 $('#logout').addEventListener('click', async () => {
   await post('/api/logout');
   showLogin();
@@ -1048,6 +1071,13 @@ document.addEventListener('click', event => {
   const rowButton = event.target.closest('.row-button');
   if (rowButton) detail(rowButton.dataset.kind, Number(rowButton.dataset.id)).catch(error => toast(
     error.message));
+  const clearSearch = event.target.closest('#clear-search');
+  if (clearSearch) {
+    keyword = '';
+    page = 1;
+    $('#search').value = '';
+    renderList().catch(error => toast(error.message));
+  }
 });
 $('#action-form').addEventListener('submit', async event => {
   event.preventDefault();
@@ -1061,7 +1091,7 @@ $('#action-form').addEventListener('submit', async event => {
     toast('操作已保存');
     await refresh();
   } catch (error) {
-    $('#form-error').textContent = uiText(error.message);
+    $('#form-error').textContent = error.message;
   } finally {
     button.disabled = false;
   }
@@ -1069,5 +1099,4 @@ $('#action-form').addEventListener('submit', async event => {
 window.addEventListener('hashchange', () => {
   if (user) navigate().catch(error => toast(error.message));
 });
-$('#login-title').textContent = uiText($('#login-title').textContent);
 start().catch(() => showLogin());
