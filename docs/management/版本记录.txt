@@ -5,3 +5,5 @@
 
 9ac6a01 | 2026-11-15T01:57:48+08:00 | Codex | Implement community care database and five service workflows
 d223357 | 2026-11-15T02:22:01+08:00 | Codex | Document verified database design and correct asynchronous page navigation
+
+2026-11-17 | 界面版，已提交 | 界面改版与操作留痕优化 | 深色顶栏、分组侧栏、KPI 横条、密集表格、登录插画；审计对象/操作中文化并过滤历史 tick；仅改前端与审计两处小改。详见 docs/management/界面改版与操作留痕说明_20261117.md

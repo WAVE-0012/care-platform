@@ -75,8 +75,11 @@ def listing(db, user, kind, page=1, keyword=""):
     elif kind == "audit":
         require_role(user, "admin", "community", "agency", "street", "civil")
         source = "SELECT a.*,u.display_name actor_name FROM audit_log a LEFT JOIN app_user u ON u.id=a.actor_id"
+        # 维护任务空转不写业务可见审计，避免“操作留痕”被系统轮询占满。
+        visible = "NOT (o.entity='scheduler' AND o.action='tick')"
         predicate, params = (
-            ("1=1", []) if user["role"] == "admin" else ("o.actor_id=?", [user["id"]])
+            (visible, []) if user["role"] == "admin"
+            else (f"o.actor_id=? AND {visible}", [user["id"]])
         )
         search = "detail"
     else:

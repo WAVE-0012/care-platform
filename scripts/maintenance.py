@@ -15,12 +15,29 @@ from care.services.health import send_notifications
 
 def tick():
     with transaction() as db:
+        expiry = db.call("sp_expire_services")
+        emergency = db.call("sp_escalate_emergencies")
+        notifications = send_notifications(db)
         result = {
-            "expiry": db.call("sp_expire_services"),
-            "emergency": db.call("sp_escalate_emergencies"),
-            "notifications": send_notifications(db),
+            "expiry": expiry,
+            "emergency": emergency,
+            "notifications": notifications,
         }
-        db.audit("scheduler", 0, "tick", None, json.dumps(result, ensure_ascii=False))
+        # 只有确实处理了数据才写操作留痕；空转只进 scheduler.log。
+        if (
+            expiry["paused_plans"]
+            or expiry["released_assignments"]
+            or emergency["escalated_count"]
+            or notifications
+        ):
+            db.audit(
+                "scheduler",
+                0,
+                "maintenance",
+                None,
+                f"到期暂停 {expiry['paused_plans']} 个计划，释放 {expiry['released_assignments']} 个派单；"
+                f"应急升级 {emergency['escalated_count']} 件；发送通知 {notifications} 条",
+            )
     return result
 
 

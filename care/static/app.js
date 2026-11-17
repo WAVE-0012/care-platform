@@ -323,9 +323,11 @@ const sections = {
 
 const navGroups = [
   ['工作台', ['overview']],
-  ['档案与业务', ['elders', 'orders', 'claims']],
-  ['服务队伍', ['workers', 'shifts', 'hours', 'quality']],
-  ['健康安全', ['vitals', 'events']],
+  ['老人服务', ['elders', 'vitals']],
+  ['服务运营', ['orders']],
+  ['服务队伍', ['workers', 'shifts', 'hours']],
+  ['健康与安全', ['events']],
+  ['补贴与监管', ['claims', 'quality']],
   ['系统管理', ['notifications', 'audit']]
 ];
 
@@ -597,8 +599,8 @@ async function renderOverview() {
           <span class="dashboard-eyebrow">ANLIN · COMMUNITY CARE</span>
           <span class="dashboard-role">${escapeHtml(roles[user.role] || '平台用户')}</span>
         </div>
-        <h2>让照护有温度，让服务可追溯</h2>
-        <p>集中掌握老人档案、服务履约、健康安全与补贴监管情况，让每一项服务都有记录。</p>
+        <h2>让每一次照护，都有温度可寻</h2>
+        <p>集中掌握老人服务、业务履约、健康安全与补贴监管情况。</p>
       </div>
       <div class="dashboard-hero-aside">
         <span>待跟进事项</span>
@@ -644,6 +646,14 @@ async function renderOverview() {
               <span class="task-arrow" aria-hidden="true">›</span>
             </a>`).join('')}
         </div>
+        ${allowed('admin', 'community', 'family', 'elderly') ? `
+        <div class="task-quickbook">
+          <button type="button" class="quickbook-button" data-action="quick-book">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <span>预约上门服务</span>
+            <small>快速为新服务创建订单</small>
+          </button>
+        </div>` : ''}
       </section>
 
       <section class="panel trend-panel">
@@ -747,21 +757,25 @@ function routeForm(title, fields, path, description = '', transform = data => da
   showForm(title, fields, data => post(path, transform(data)), description);
 }
 
+function openBookingForm() {
+  return routeForm('预约上门服务', [
+    elderSelect(), itemSelect(), field('scheduled_at', '预约时间', 'datetime-local', {
+      value: dateInput(1) + 'T10:00'
+    }), field('duration_minutes', '预约时长（分钟）', 'number', {
+      value: 60,
+      min: 1,
+      max: 720
+    })
+  ], '/api/orders', '按次项目沿用标准时长；订单保存下单时的地址和价格。', data => ({
+    ...data,
+    request_key: crypto.randomUUID()
+  }));
+}
+
 function topActions(kind) {
   const result = [];
-  if (kind === 'overview' && allowed('admin', 'community', 'family', 'elderly')) result.push(['＋ 预约服务',
-    () => routeForm('预约上门服务', [
-      elderSelect(), itemSelect(), field('scheduled_at', '预约时间', 'datetime-local', {
-        value: dateInput(1) + 'T10:00'
-      }), field('duration_minutes', '预约时长（分钟）', 'number', {
-        value: 60,
-        min: 1,
-        max: 720
-      })
-    ], '/api/orders', '按次项目沿用标准时长；订单保存下单时的地址和价格。', data => ({
-      ...data,
-      request_key: crypto.randomUUID()
-    }))
+  if (kind === 'overview' && allowed('admin', 'community', 'family', 'elderly')) result.push([
+    '＋ 预约服务', openBookingForm
   ]);
   if (kind === 'overview' && allowed('admin')) result.push(['更新业务待办', async () => {
     await post('/api/maintenance');
@@ -1226,6 +1240,8 @@ document.addEventListener('click', event => {
     $('#search').value = '';
     renderList().catch(error => toast(error.message));
   }
+  const quickBook = event.target.closest('[data-action="quick-book"]');
+  if (quickBook) openBookingForm();
 });
 $('#action-form').addEventListener('submit', async event => {
   event.preventDefault();

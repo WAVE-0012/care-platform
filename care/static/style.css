@@ -1,7 +1,7 @@
 @charset "UTF-8";
 
 /* ==========================================================================
-   安邻社区居家养老智慧服务平台
+   安邻社区居家养老服务平台
    Design system: 暖调陶土蓝 × 人文养老 × 政务 SaaS
    说明：保留现有业务 class / id 钩子，不依赖第三方 UI 框架。
    ========================================================================== */
@@ -1258,6 +1258,52 @@ label {
   color: var(--muted-2);
   font-size: 21px;
   line-height: 1;
+}
+
+.task-quickbook {
+  padding: 0 15px 15px;
+}
+
+.quickbook-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 13px;
+  background: var(--primary-soft);
+  border: 1px dashed var(--primary);
+  border-radius: var(--radius-md);
+  color: var(--primary-dark);
+  cursor: pointer;
+  transition: background .18s, border-color .18s;
+}
+
+.quickbook-button:hover {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-style: solid;
+}
+
+.quickbook-button svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 19px;
+}
+
+.quickbook-button span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.quickbook-button small {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.quickbook-button:hover small {
+  color: var(--on-primary);
+  opacity: .85;
 }
 
 .trend-legend {
