@@ -486,73 +486,207 @@ async function renderList() {
 }
 async function renderOverview() {
   const version = ++renderVersion;
-  const [summary, ordersData] = await Promise.all([api('/api/dashboard'), api(
-    '/api/list/orders')]);
+  const [summary, ordersData] = await Promise.all([
+    api('/api/dashboard'),
+    api('/api/list/orders')
+  ]);
   if (version !== renderVersion) return;
-  const waiting = summary.orders.waiting || 0;
-  const due = summary.reassessment.length;
-  const todoTotal = summary.events + waiting + due;
+
+  const waiting = Number(summary.orders.waiting || 0);
+  const due = Array.isArray(summary.reassessment) ? summary.reassessment.length : 0;
+  const eventCount = Number(summary.events || 0);
+  const todoTotal = eventCount + waiting + due;
+  const completed = Number(summary.orders.completed || 0);
+  const elders = Number(summary.elders || 0);
+  const subsidy = Number(summary.subsidy || 0);
+
   const stats = [
-    ['在册老人', summary.elders, '人', '当前授权范围内的有效档案'],
-    ['已完成服务', summary.orders.completed || 0, '单',
-      `累计结算 ¥ ${money(summary.orders.amount)}`
-    ],
-    ['待调度与接单', waiting, '单', '待派单、待接单和待确认'],
-    ['已核定补贴', money(summary.subsidy), '元', '终审通过及已拨付金额']
+    {
+      key: 'elders',
+      name: '在册老人',
+      value: elders.toLocaleString('zh-CN'),
+      unit: '人',
+      note: '当前授权范围内的有效档案',
+      icon: '<circle cx="12" cy="8" r="3.2"/><path d="M5 20v-1.4A4.6 4.6 0 0 1 9.6 14h4.8a4.6 4.6 0 0 1 4.6 4.6V20"/>'
+    },
+    {
+      key: 'completed',
+      name: '已完成服务',
+      value: completed.toLocaleString('zh-CN'),
+      unit: '单',
+      note: `累计结算 ¥ ${money(summary.orders.amount)}`,
+      icon: '<path d="M7 3.8h7l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 6 20V5.3A1.5 1.5 0 0 1 7.5 3.8Z"/><path d="M14 4v4h4M9 14l2 2 4-4"/>'
+    },
+    {
+      key: 'waiting',
+      name: '待调度与接单',
+      value: waiting.toLocaleString('zh-CN'),
+      unit: '单',
+      note: '待派单、待接单和待确认',
+      icon: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.2 2"/>'
+    },
+    {
+      key: 'subsidy',
+      name: '已核定补贴',
+      value: money(subsidy),
+      unit: '元',
+      note: '终审通过及已拨付金额',
+      icon: '<rect x="3.5" y="6" width="17" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9h.01M17.5 15h.01"/>'
+    }
   ];
-  const trendRows = summary.trend.map(t => {
-    const rate = t.orders ? Math.round(t.completed / t.orders * 100) : 0;
-    return `<tr><td>${escapeHtml(t.month)}</td><td class="num">${t.orders}</td>` +
-      `<td class="num">${t.completed}</td><td class="num">${rate}%</td></tr>`;
-  }).join('');
-  const totalOrders = summary.trend.reduce((sum, t) => sum + Number(t.orders || 0), 0);
-  const totalCompleted = summary.trend.reduce((sum, t) => sum + Number(t.completed || 0), 0);
+
+  const trend = Array.isArray(summary.trend) ? summary.trend : [];
+  const chartRows = trend.slice(-6);
+  const maxOrders = Math.max(1, ...chartRows.map(item => Math.max(0, Number(item.orders || 0))));
+  const totalOrders = trend.reduce((sum, item) => sum + Number(item.orders || 0), 0);
+  const totalCompleted = trend.reduce((sum, item) => sum + Number(item.completed || 0), 0);
   const totalRate = totalOrders ? Math.round(totalCompleted / totalOrders * 100) : 0;
-  const trendTotal = summary.trend.length
-    ? `<tr class="total-row"><td>合计</td><td class="num">${totalOrders}</td>` +
-      `<td class="num">${totalCompleted}</td><td class="num">${totalRate}%</td></tr>`
-    : '';
-  const recent = ordersData.rows.slice(0, 5);
+
+  const chartMarkup = chartRows.length
+    ? chartRows.map(item => {
+      const orders = Math.max(0, Number(item.orders || 0));
+      const done = Math.max(0, Number(item.completed || 0));
+      const orderHeight = orders ? Math.max(4, Math.round(orders / maxOrders * 100)) : 0;
+      const doneHeight = done ? Math.max(4, Math.round(done / maxOrders * 100)) : 0;
+      const month = String(item.month || '—');
+      return `<div class="trend-chart-column" title="${escapeHtml(month)}：预约 ${orders} 单，已完成 ${done} 单">
+        <div class="trend-bars" aria-hidden="true">
+          <span class="trend-bar trend-bar--orders" style="height:${orderHeight}%"></span>
+          <span class="trend-bar trend-bar--completed" style="height:${doneHeight}%"></span>
+        </div>
+        <span class="trend-month">${escapeHtml(month)}</span>
+        <span class="trend-detail">${done}/${orders}</span>
+      </div>`;
+    }).join('')
+    : '<p class="empty trend-empty">暂无服务趋势数据</p>';
+
+  const tasks = [
+    {
+      key: 'events',
+      title: '应急处置跟进',
+      description: '响应、到场和处置结果待记录',
+      count: eventCount,
+      href: '#events',
+      icon: '<path d="M12 3 3.3 19h17.4L12 3Z"/><path d="M12 9v4M12 16h.01"/>'
+    },
+    {
+      key: 'orders',
+      title: '服务调度与接单',
+      description: '待派单、待接单和待确认的订单',
+      count: waiting,
+      href: '#orders',
+      icon: '<path d="M7 3.5h7l4 4v13H6v-15a2 2 0 0 1 1-2Z"/><path d="M14 3.5v4h4M9 13h6M9 16.5h4"/>'
+    },
+    {
+      key: 'elders',
+      title: '评估到期与复评',
+      description: '七日内到期或尚未评估的老人档案',
+      count: due,
+      href: '#elders',
+      icon: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 9h16M8 13h3M8 16h6"/>'
+    }
+  ];
+
+  const recent = (ordersData.rows || []).slice(0, 5);
   currentRows = recent;
+
   $('#overview-content').innerHTML = `
-    <section class="panel kpi-panel">
-      ${stats.map(([name, value, unit, note]) =>
-        `<div class="kpi"><div class="kpi-label">${name}</div>` +
-        `<div class="kpi-value">${value}<small>${unit}</small></div>` +
-        `<div class="kpi-note">${note}</div></div>`).join('')}
+    <section class="dashboard-hero" aria-label="工作台欢迎信息">
+      <div class="dashboard-hero-main">
+        <div class="dashboard-hero-meta">
+          <span class="dashboard-eyebrow">ANLIN · COMMUNITY CARE</span>
+          <span class="dashboard-role">${escapeHtml(roles[user.role] || '平台用户')}</span>
+        </div>
+        <h2>让照护有温度，让服务可追溯</h2>
+        <p>集中掌握老人档案、服务履约、健康安全与补贴监管情况，让每一项服务都有记录。</p>
+      </div>
+      <div class="dashboard-hero-aside">
+        <span>待跟进事项</span>
+        <strong>${todoTotal.toLocaleString('zh-CN')}</strong>
+        <small>应急 · 订单 · 评估</small>
+      </div>
     </section>
+
+    <section class="kpi-panel" aria-label="核心业务指标">
+      ${stats.map(stat => `
+        <article class="kpi kpi--${stat.key}">
+          <div class="kpi-topline">
+            <span class="kpi-label">${stat.name}</span>
+            <span class="kpi-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${stat.icon}</svg>
+            </span>
+          </div>
+          <div class="kpi-value">${escapeHtml(stat.value)}<small>${stat.unit}</small></div>
+          <div class="kpi-note">${escapeHtml(stat.note)}</div>
+        </article>`).join('')}
+    </section>
+
     <div class="overview-grid">
-      <section class="panel">
-        <div class="panel-heading"><h2>待办事项</h2><span>共 ${todoTotal} 项</span></div>
-        <div class="table-scroll">
-          <table class="todo-table">
-            <thead><tr><th>事项</th><th>说明</th><th class="num">数量</th><th>操作</th></tr></thead>
-            <tbody>
-              <tr><td>应急处置跟进</td><td>响应、到场和处置结果待记录</td><td class="num">${summary.events}</td><td><a class="inline-link" href="#events">处理</a></td></tr>
-              <tr><td>服务调度与接单</td><td>待派单、待接单和待确认的订单</td><td class="num">${waiting}</td><td><a class="inline-link" href="#orders">查看</a></td></tr>
-              <tr><td>评估到期与复评</td><td>七日内到期或尚未评估的老人档案</td><td class="num">${due}</td><td><a class="inline-link" href="#elders">查看</a></td></tr>
-            </tbody>
-          </table>
+      <section class="panel task-panel">
+        <div class="panel-heading">
+          <div class="panel-heading-copy">
+            <h2>待处理工作</h2>
+            <p>根据当前账号权限汇总待跟进事项</p>
+          </div>
+          <span class="panel-count">共 ${todoTotal.toLocaleString('zh-CN')} 项</span>
+        </div>
+        <div class="task-list">
+          ${tasks.map(task => `
+            <a class="task-item task-item--${task.key}" href="${task.href}">
+              <span class="task-symbol" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${task.icon}</svg>
+              </span>
+              <span class="task-copy">
+                <strong>${task.title}</strong>
+                <small>${task.description}</small>
+              </span>
+              <span class="task-count">${task.count.toLocaleString('zh-CN')}</span>
+              <span class="task-arrow" aria-hidden="true">›</span>
+            </a>`).join('')}
         </div>
       </section>
-      <section class="panel">
-        <div class="panel-heading"><h2>服务量统计</h2><span>按预约月份</span></div>
-        <div class="table-scroll">
-          <table>
-            <thead><tr><th>月份</th><th class="num">预约订单</th><th class="num">已完成</th><th class="num">完成率</th></tr></thead>
-            <tbody>${trendRows ? trendRows + trendTotal : '<tr><td colspan="4" class="empty">暂无服务记录</td></tr>'}</tbody>
-          </table>
+
+      <section class="panel trend-panel">
+        <div class="panel-heading">
+          <div class="panel-heading-copy">
+            <h2>服务量趋势</h2>
+            <p>按预约月份统计</p>
+          </div>
+          <span class="panel-period">${chartRows.length ? `最近 ${chartRows.length} 个月` : '暂无数据'}</span>
+        </div>
+        <div class="trend-legend">
+          <span><i class="trend-legend-dot trend-legend-dot--orders"></i>预约订单</span>
+          <span><i class="trend-legend-dot trend-legend-dot--completed"></i>已完成</span>
+        </div>
+        <div class="trend-chart-scroll">
+          <div class="trend-chart" role="img" aria-label="服务量趋势柱状图，按月份比较预约订单和已完成订单">
+            ${chartMarkup}
+          </div>
+        </div>
+        <div class="trend-summary">
+          <div><span>预约订单</span><strong>${totalOrders.toLocaleString('zh-CN')}</strong></div>
+          <div><span>已完成</span><strong>${totalCompleted.toLocaleString('zh-CN')}</strong></div>
+          <div><span>完成率</span><strong>${totalRate}%</strong></div>
         </div>
         <p class="panel-note">统计口径：按预约月份归集；完成率 = 已完成 ÷ 预约订单。</p>
       </section>
     </div>
-    <section class="panel">
-      <div class="panel-heading"><h2>近期服务订单</h2><a class="inline-link" href="#orders">查看全部</a></div>
-      <div class="table-scroll">${recent.length ? tableMarkup(recent, sections.orders.columns, 'orders') : '<p class="empty">暂无订单</p>'}</div>
+
+    <section class="panel recent-orders-panel">
+      <div class="panel-heading">
+        <div class="panel-heading-copy">
+          <h2>近期服务订单</h2>
+          <p>查看当前授权范围内的服务履约记录</p>
+        </div>
+        <a class="inline-link" href="#orders">查看全部订单 <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="table-scroll">${recent.length
+        ? tableMarkup(recent, sections.orders.columns, 'orders')
+        : '<p class="empty">暂无订单</p>'}</div>
     </section>`;
+
   $('#workspace').dataset.section = 'overview';
 }
-
 function addButton(parent, label, handler, className = 'secondary') {
   const button = document.createElement('button');
   button.type = 'button';
@@ -615,6 +749,20 @@ function routeForm(title, fields, path, description = '', transform = data => da
 
 function topActions(kind) {
   const result = [];
+  if (kind === 'overview' && allowed('admin', 'community', 'family', 'elderly')) result.push(['＋ 预约服务',
+    () => routeForm('预约上门服务', [
+      elderSelect(), itemSelect(), field('scheduled_at', '预约时间', 'datetime-local', {
+        value: dateInput(1) + 'T10:00'
+      }), field('duration_minutes', '预约时长（分钟）', 'number', {
+        value: 60,
+        min: 1,
+        max: 720
+      })
+    ], '/api/orders', '按次项目沿用标准时长；订单保存下单时的地址和价格。', data => ({
+      ...data,
+      request_key: crypto.randomUUID()
+    }))
+  ]);
   if (kind === 'overview' && allowed('admin')) result.push(['更新业务待办', async () => {
     await post('/api/maintenance');
     toast('到期、超时与通知待办已更新');
