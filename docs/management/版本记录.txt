@@ -1,0 +1,7 @@
+本地实际版本记录
+
+以下为交付校核前已完成的提交；完整记录可在本机 project 中执行 git log 查看。
+提交作者 Codex 表示工具实施记录，组员贡献在确定分工后另行填写。
+
+9ac6a01 | 2026-11-15T01:57:48+08:00 | Codex | Implement community care database and five service workflows
+d223357 | 2026-11-15T02:22:01+08:00 | Codex | Document verified database design and correct asynchronous page navigation

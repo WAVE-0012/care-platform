@@ -1,0 +1,20 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=TB; agency [shape=record,label="{服务机构\nagency|PK id\lFK district_id\l}",fontsize=12];
+worker [shape=record,label="{护工档案\nworker|PK id\lFK agency_id\lFK user_id\l}",fontsize=12];
+certificate [shape=record,label="{护工资质\ncertificate|PK id\lFK worker_id\l}",fontsize=12];
+worker_skill [shape=record,label="{护工服务项目\nworker_skill|PK worker_id\lPK item_id\l}",fontsize=12];
+worker_area [shape=record,label="{护工服务区域\nworker_area|PK worker_id\lPK community_id\l}",fontsize=12];
+service_item [shape=record,label="{服务项目\nservice_item|PK id\l}",fontsize=12];
+community [shape=record,label="{社区\ncommunity|PK id\lFK street_id\l}",fontsize=12];
+shift [shape=record,label="{护工排班\nshift|PK id\lFK worker_id\l}",fontsize=12];
+assignment [shape=record,label="{派单记录\nassignment|PK id\lFK order_id\lFK shift_id\lFK dispatcher_id\l}",fontsize=12];
+work_log [shape=record,label="{工时记录\nwork_log|PK id\lFK assignment_id\lFK reviewer_id\l}",fontsize=12]; shift -> assignment [taillabel="1",headlabel="0..*",label="shift_id",labeldistance=1.7];
+worker -> certificate [taillabel="1",headlabel="0..*",label="worker_id",labeldistance=1.7];
+worker -> shift [taillabel="1",headlabel="0..*",label="worker_id",labeldistance=1.7];
+assignment -> work_log [taillabel="1",headlabel="0..1",label="assignment_id",labeldistance=1.7];
+agency -> worker [taillabel="1",headlabel="0..*",label="agency_id",labeldistance=1.7];
+worker -> worker_area [taillabel="1",headlabel="0..*",label="worker_id",labeldistance=1.7];
+community -> worker_area [taillabel="1",headlabel="0..*",label="community_id",labeldistance=1.7];
+worker -> worker_skill [taillabel="1",headlabel="0..*",label="worker_id",labeldistance=1.7];
+service_item -> worker_skill [taillabel="1",headlabel="0..*",label="item_id",labeldistance=1.7]; }

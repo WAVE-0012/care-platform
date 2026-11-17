@@ -1,0 +1,29 @@
+{
+  "source": "CareHomeCourse2026",
+  "restored_database": "CareHomeCourse2026_restore_20261115_010612",
+  "started_at": "20261115_010612",
+  "restore_seconds": 1.429,
+  "total_seconds": 2.96,
+  "source_values": {
+    "elders": 40,
+    "orders": 120,
+    "settlement": "4688.00",
+    "hours": "80.00",
+    "claims": "654.00"
+  },
+  "restored_values": {
+    "elders": 40,
+    "orders": 120,
+    "settlement": "4688.00",
+    "hours": "80.00",
+    "claims": "654.00"
+  },
+  "checksum": "passed",
+  "checkdb": "passed",
+  "matching": "passed",
+  "backup_files": {
+    "full": "D:\\DatabaseLab\\Backups\\CareHomeCourse2026_20261115_010612_full.bak",
+    "diff": "D:\\DatabaseLab\\Backups\\CareHomeCourse2026_20261115_010612_diff.bak",
+    "log": "D:\\DatabaseLab\\Backups\\CareHomeCourse2026_20261115_010612_log.trn"
+  }
+}

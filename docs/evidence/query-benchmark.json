@@ -1,0 +1,54 @@
+{
+  "rows": 100000,
+  "table": "#order_benchmark",
+  "query": "SELECT COUNT(*) count,SUM(settlement) amount FROM #order_benchmark WHERE community_id=37 AND scheduled_at>='20250101' AND scheduled_at<'20250201' AND status='completed'",
+  "before": {
+    "median_ms": 16.838,
+    "runs_ms": [
+      462.393,
+      16.896,
+      12.717,
+      16.78,
+      17.036,
+      14.979,
+      21.391
+    ],
+    "result": [
+      "36",
+      "1656.00"
+    ],
+    "statistics_io": [],
+    "operators": [
+      "Clustered Index Scan",
+      "Compute Scalar",
+      "Stream Aggregate"
+    ]
+  },
+  "after": {
+    "median_ms": 0.263,
+    "runs_ms": [
+      7.5,
+      0.448,
+      0.31,
+      0.263,
+      0.263,
+      0.242,
+      0.245
+    ],
+    "result": [
+      "36",
+      "1656.00"
+    ],
+    "statistics_io": [],
+    "operators": [
+      "Compute Scalar",
+      "Concatenation",
+      "Constant Scan",
+      "Index Seek",
+      "Merge Interval",
+      "Nested Loops",
+      "Stream Aggregate"
+    ]
+  },
+  "method": "每阶段7次，第1次预热；报告后6次中位数。临时表测试，无并行用户负载。"
+}

@@ -1,0 +1,80 @@
+{
+  "project": "社区居家养老智慧服务平台",
+  "group_report": {
+    "zip_integrity": "passed",
+    "template_instruction_highlights": 0,
+    "template_media_retained": true,
+    "sha256": "9c51bf19e70957137bc6ebd78e2bebaa6c6b944e0d64052994743b84fc1b92de"
+  },
+  "personal_report": {
+    "zip_integrity": "passed",
+    "template_instruction_highlights": 0,
+    "template_media_retained": true,
+    "sha256": "a1d061ecd38262d4d17612341064ded84f70a8e5a5baed856daaf4563f30b6dc"
+  },
+  "group_pages": 84,
+  "personal_pages": 8,
+  "word_native_export": "passed",
+  "visual_review": {
+    "group_pages": "all reviewed",
+    "personal_pages": "all reviewed",
+    "powerpoint_slides": "all 10 reviewed after native PowerPoint export",
+    "final_group_body_unchanged_from_reviewed_pages": 69,
+    "final_group_changed_pages_reviewed": [
+      2,
+      11,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      65,
+      66,
+      67,
+      68,
+      82
+    ]
+  },
+  "automated_tests": {
+    "tests": "64",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "47.797",
+    "timestamp": "2026-11-15T01:42:13.360113"
+  },
+  "browser": {
+    "pages": 8,
+    "javascript_errors": [],
+    "mobile_viewport": "390x844",
+    "delayed_navigation": "passed",
+    "result": "passed"
+  },
+  "presentation": {
+    "slides": 10,
+    "sha256": "2a7ae81c67f37dd3b50b78319fa7cbc83a39954c9fe9fb419a9ad466f13a277e",
+    "package": "pass",
+    "layout_findings": 0,
+    "native_chart": true,
+    "powerpoint_open": "passed"
+  },
+  "video": {
+    "file": "系统演示录屏（无声）.webm",
+    "seconds": 302.12,
+    "audio": false,
+    "sha256": "3a2a8ea987a63ffedd90d3ebfba740c8678adfa6b700d29335089aafae3c8728"
+  },
+  "blank_by_request": [
+    "成员信息",
+    "组内分工",
+    "个人任务与协作"
+  ],
+  "actual_activity_pending": [
+    "小组会议记录",
+    "全员发言答辩录像",
+    "教师提问与反馈"
+  ]
+}

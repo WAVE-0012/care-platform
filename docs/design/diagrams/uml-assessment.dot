@@ -1,0 +1,19 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=TB; elderly [shape=record,label="{老人档案\nelderly|PK id\lFK community_id\lFK user_id\l}",fontsize=12];
+contact [shape=record,label="{老人联系人\ncontact|PK id\lFK elderly_id\lFK user_id\l}",fontsize=12];
+assessment [shape=record,label="{能力评估\nassessment|PK id\lFK elderly_id\lFK assessor_id\l}",fontsize=12];
+service_package [shape=record,label="{服务包\nservice_package|PK id\l}",fontsize=12];
+package_item [shape=record,label="{服务包项目\npackage_item|PK package_id\lPK item_id\l}",fontsize=12];
+service_item [shape=record,label="{服务项目\nservice_item|PK id\l}",fontsize=12];
+care_plan [shape=record,label="{照护计划\ncare_plan|PK id\lFK elderly_id\lFK package_id\lFK worker_id\l}",fontsize=12];
+plan_item [shape=record,label="{计划项目\nplan_item|PK plan_id\lPK item_id\l}",fontsize=12];
+worker [shape=record,label="{护工档案\nworker|PK id\lFK agency_id\lFK user_id\l}",fontsize=12]; elderly -> assessment [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+elderly -> care_plan [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+service_package -> care_plan [taillabel="1",headlabel="0..*",label="package_id",labeldistance=1.7];
+worker -> care_plan [taillabel="1",headlabel="0..*",label="worker_id",labeldistance=1.7];
+elderly -> contact [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+service_package -> package_item [taillabel="1",headlabel="0..*",label="package_id",labeldistance=1.7];
+service_item -> package_item [taillabel="1",headlabel="0..*",label="item_id",labeldistance=1.7];
+care_plan -> plan_item [taillabel="1",headlabel="0..*",label="plan_id",labeldistance=1.7];
+service_item -> plan_item [taillabel="1",headlabel="0..*",label="item_id",labeldistance=1.7]; }

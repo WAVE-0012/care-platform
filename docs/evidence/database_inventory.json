@@ -1,0 +1,183 @@
+{
+  "database": "CareHomeCourse2026",
+  "tables": [
+    {
+      "name": "agency",
+      "rows": 20
+    },
+    {
+      "name": "app_user",
+      "rows": 201
+    },
+    {
+      "name": "area",
+      "rows": 21
+    },
+    {
+      "name": "assessment",
+      "rows": 40
+    },
+    {
+      "name": "assignment",
+      "rows": 100
+    },
+    {
+      "name": "audit_log",
+      "rows": 146
+    },
+    {
+      "name": "care_plan",
+      "rows": 40
+    },
+    {
+      "name": "certificate",
+      "rows": 40
+    },
+    {
+      "name": "claim_item",
+      "rows": 40
+    },
+    {
+      "name": "claim_review",
+      "rows": 32
+    },
+    {
+      "name": "community",
+      "rows": 20
+    },
+    {
+      "name": "contact",
+      "rows": 40
+    },
+    {
+      "name": "device",
+      "rows": 40
+    },
+    {
+      "name": "device_binding",
+      "rows": 40
+    },
+    {
+      "name": "elderly",
+      "rows": 40
+    },
+    {
+      "name": "eligibility_snapshot",
+      "rows": 80
+    },
+    {
+      "name": "emergency",
+      "rows": 20
+    },
+    {
+      "name": "metric_rule",
+      "rows": 60
+    },
+    {
+      "name": "notification",
+      "rows": 60
+    },
+    {
+      "name": "package_item",
+      "rows": 400
+    },
+    {
+      "name": "plan_item",
+      "rows": 800
+    },
+    {
+      "name": "quality_check",
+      "rows": 20
+    },
+    {
+      "name": "service_item",
+      "rows": 20
+    },
+    {
+      "name": "service_order",
+      "rows": 120
+    },
+    {
+      "name": "service_package",
+      "rows": 20
+    },
+    {
+      "name": "shift",
+      "rows": 360
+    },
+    {
+      "name": "subsidy_claim",
+      "rows": 20
+    },
+    {
+      "name": "subsidy_policy",
+      "rows": 80
+    },
+    {
+      "name": "vital",
+      "rows": 40
+    },
+    {
+      "name": "work_log",
+      "rows": 80
+    },
+    {
+      "name": "worker",
+      "rows": 40
+    },
+    {
+      "name": "worker_area",
+      "rows": 40
+    },
+    {
+      "name": "worker_skill",
+      "rows": 800
+    }
+  ],
+  "objects": [
+    {
+      "type_desc": "CHECK_CONSTRAINT",
+      "count": 82
+    },
+    {
+      "type_desc": "DEFAULT_CONSTRAINT",
+      "count": 45
+    },
+    {
+      "type_desc": "FOREIGN_KEY_CONSTRAINT",
+      "count": 70
+    },
+    {
+      "type_desc": "PRIMARY_KEY_CONSTRAINT",
+      "count": 33
+    },
+    {
+      "type_desc": "SQL_INLINE_TABLE_VALUED_FUNCTION",
+      "count": 2
+    },
+    {
+      "type_desc": "SQL_SCALAR_FUNCTION",
+      "count": 1
+    },
+    {
+      "type_desc": "SQL_STORED_PROCEDURE",
+      "count": 11
+    },
+    {
+      "type_desc": "SQL_TRIGGER",
+      "count": 14
+    },
+    {
+      "type_desc": "UNIQUE_CONSTRAINT",
+      "count": 18
+    },
+    {
+      "type_desc": "USER_TABLE",
+      "count": 33
+    },
+    {
+      "type_desc": "VIEW",
+      "count": 17
+    }
+  ]
+}

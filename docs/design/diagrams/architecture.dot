@@ -1,0 +1,16 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=TB;
+ browser[label="浏览器
+中文页面 HTML CSS JavaScript"];
+ routes[label="Flask 路由
+会话 CSRF RBAC 与范围检查"];
+ services[label="五条业务线服务
+参数转换与业务操作"];
+ repo[label="Repository
+参数化查询 批量写入 事务"];
+ sql[label="SQL Server Express
+33张表 17个视图 11个存储过程 14个触发器"];
+ scheduler[label="维护进程
+每分钟检查到期与超时"];
+ browser -> routes -> services -> repo -> sql [dir=forward]; scheduler -> sql [dir=forward];}

@@ -1,0 +1,14 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=LR;
+    a0 [shape=plaintext,label="«actor»\n社区管理员"];
+a1 [shape=plaintext,label="«actor»\n设备采集接口"];
+a2 [shape=plaintext,label="«actor»\n家属与护工"];
+a3 [shape=plaintext,label="«actor»\n维护进程"];
+    subgraph cluster_system {label="健康监测与应急响应";color="#afc5d1";u0 [shape=ellipse,label="登记设备与换绑",fillcolor="white"];
+u1 [shape=ellipse,label="上传体征",fillcolor="white"];
+u2 [shape=ellipse,label="核实异常",fillcolor="white"];
+u3 [shape=ellipse,label="发起求助",fillcolor="white"];
+u4 [shape=ellipse,label="响应 到场与关闭",fillcolor="white"];
+u5 [shape=ellipse,label="超时升级与通知重试",fillcolor="white"];}
+    a0 -> u0; a0 -> u2; a0 -> u4; a1 -> u1; a2 -> u3; a3 -> u5;}

@@ -1,0 +1,11 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=LR;
+    a0 [shape=plaintext,label="«actor»\n社区管理员"];
+a1 [shape=plaintext,label="«actor»\n街道和民政监管"];
+a2 [shape=plaintext,label="«actor»\n服务机构"];
+    subgraph cluster_system {label="补贴核算与质量监管";color="#afc5d1";u0 [shape=ellipse,label="归集月度申报",fillcolor="white"];
+u1 [shape=ellipse,label="初审 终审与拨付",fillcolor="white"];
+u2 [shape=ellipse,label="服务抽查",fillcolor="white"];
+u3 [shape=ellipse,label="整改提交与复核",fillcolor="white"];}
+    a0 -> u0; a1 -> u1; a1 -> u2; a1 -> u3; a2 -> u3;}

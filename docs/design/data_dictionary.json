@@ -1,0 +1,6406 @@
+{
+  "tables": {
+    "area": {
+      "label": "行政区划",
+      "columns": [
+        {
+          "table_name": "area",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "area",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 120,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(60)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "area",
+          "name": "kind",
+          "column_id": 3,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "区划类型",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "area",
+          "name": "parent_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "上级区划",
+          "sql_type": "int",
+          "constraints": [
+            "FK → area.id"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([kind]='district' AND [parent_id] IS NULL OR [kind]='street' AND [parent_id] IS NOT NULL)",
+        "([kind]='street' OR [kind]='district')"
+      ]
+    },
+    "community": {
+      "label": "社区",
+      "columns": [
+        {
+          "table_name": "community",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "community",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 120,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(60)",
+          "constraints": [
+            "NOT NULL",
+            "UK(name)"
+          ]
+        },
+        {
+          "table_name": "community",
+          "name": "street_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属街道",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → area.id"
+          ]
+        },
+        {
+          "table_name": "community",
+          "name": "longitude",
+          "column_id": 4,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "经度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "community",
+          "name": "latitude",
+          "column_id": 5,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "纬度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "community",
+          "name": "radius_m",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((3000))",
+          "description": "社区服务半径 米",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((3000))"
+          ]
+        },
+        {
+          "table_name": "community",
+          "name": "checkin_radius_m",
+          "column_id": 7,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((200))",
+          "description": "签到围栏半径 米",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((200))"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__communit__72E12F1B68D8F2E2": [
+          "name"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([checkin_radius_m]>(0))",
+        "([latitude]>=(-90) AND [latitude]<=(90))",
+        "([longitude]>=(-180) AND [longitude]<=(180))",
+        "([radius_m]>(0))"
+      ]
+    },
+    "agency": {
+      "label": "服务机构",
+      "columns": [
+        {
+          "table_name": "agency",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "agency",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 160,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(80)",
+          "constraints": [
+            "NOT NULL",
+            "UK(name)"
+          ]
+        },
+        {
+          "table_name": "agency",
+          "name": "district_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属区县",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → area.id"
+          ]
+        },
+        {
+          "table_name": "agency",
+          "name": "active",
+          "column_id": 4,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((1))",
+          "description": "是否启用",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((1))"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__agency__72E12F1BAB653B3C": [
+          "name"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": []
+    },
+    "app_user": {
+      "label": "用户账号",
+      "columns": [
+        {
+          "table_name": "app_user",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "username",
+          "column_id": 2,
+          "type": "varchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "登录账号",
+          "sql_type": "varchar(40)",
+          "constraints": [
+            "NOT NULL",
+            "UK(username)"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "display_name",
+          "column_id": 3,
+          "type": "nvarchar",
+          "max_length": 80,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "显示姓名",
+          "sql_type": "nvarchar(40)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "password_hash",
+          "column_id": 4,
+          "type": "varchar",
+          "max_length": 256,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "含盐的密码哈希",
+          "sql_type": "varchar(256)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "role",
+          "column_id": 5,
+          "type": "varchar",
+          "max_length": 12,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "业务角色",
+          "sql_type": "varchar(12)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "community_id",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属社区或发生时社区",
+          "sql_type": "int",
+          "constraints": [
+            "FK → community.id"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "agency_id",
+          "column_id": 7,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属服务机构",
+          "sql_type": "int",
+          "constraints": [
+            "FK → agency.id"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "area_id",
+          "column_id": 8,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "管理区划",
+          "sql_type": "int",
+          "constraints": [
+            "FK → area.id"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "active",
+          "column_id": 9,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((1))",
+          "description": "是否启用",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((1))"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "failed_attempts",
+          "column_id": 10,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "连续登录失败次数",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "app_user",
+          "name": "locked_until",
+          "column_id": 11,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "登录锁定截止",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "app_user",
+          "name": "last_login",
+          "column_id": 12,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "最近登录时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__app_user__F3DBC572B34FA4DC": [
+          "username"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([failed_attempts]>=(0))",
+        "([role]='civil' OR [role]='street' OR [role]='agency' OR [role]='worker' OR [role]='elderly' OR [role]='family' OR [role]='community' OR [role]='admin')"
+      ]
+    },
+    "elderly": {
+      "label": "老人档案",
+      "columns": [
+        {
+          "table_name": "elderly",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 80,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(40)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "identity_cipher",
+          "column_id": 3,
+          "type": "varchar",
+          "max_length": 256,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "身份证加密值",
+          "sql_type": "varchar(256)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "identity_hash",
+          "column_id": 4,
+          "type": "char",
+          "max_length": 64,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "身份证HMAC唯一检索值",
+          "sql_type": "char(64)",
+          "constraints": [
+            "NOT NULL",
+            "UK(identity_hash)"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "identity_mask",
+          "column_id": 5,
+          "type": "nvarchar",
+          "max_length": 48,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "脱敏身份证",
+          "sql_type": "nvarchar(24)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "birth_date",
+          "column_id": 6,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "出生日期",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "address",
+          "column_id": 7,
+          "type": "nvarchar",
+          "max_length": 400,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "居住地址或服务地址快照",
+          "sql_type": "nvarchar(200)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "community_id",
+          "column_id": 8,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属社区或发生时社区",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → community.id"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "longitude",
+          "column_id": 9,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "经度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "latitude",
+          "column_id": 10,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "纬度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "living_alone",
+          "column_id": 11,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "独居标记",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "disabled",
+          "column_id": 12,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "失能标记",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "low_income",
+          "column_id": 13,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "低保资格",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "active",
+          "column_id": 14,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((1))",
+          "description": "是否启用",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((1))"
+          ]
+        },
+        {
+          "table_name": "elderly",
+          "name": "user_id",
+          "column_id": 15,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联登录账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id",
+            "UNIQUE(user_id) WHERE ([user_id] IS NOT NULL)"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__elderly__210127F7EC0FD088": [
+          "identity_hash"
+        ]
+      },
+      "filtered_unique": {
+        "UX_elderly_user": {
+          "columns": [
+            "user_id"
+          ],
+          "filter": "([user_id] IS NOT NULL)"
+        }
+      },
+      "checks": [
+        "([latitude]>=(-90) AND [latitude]<=(90))",
+        "([longitude]>=(-180) AND [longitude]<=(180))"
+      ]
+    },
+    "contact": {
+      "label": "老人联系人",
+      "columns": [
+        {
+          "table_name": "contact",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "elderly_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联老人",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → elderly.id",
+            "UNIQUE(elderly_id) WHERE ([is_primary]=(1) AND [active]=(1))"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "name",
+          "column_id": 3,
+          "type": "nvarchar",
+          "max_length": 80,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(40)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "relationship",
+          "column_id": 4,
+          "type": "nvarchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "联系人关系",
+          "sql_type": "nvarchar(20)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "phone_cipher",
+          "column_id": 5,
+          "type": "varchar",
+          "max_length": 256,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "联系电话加密值",
+          "sql_type": "varchar(256)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "phone_mask",
+          "column_id": 6,
+          "type": "varchar",
+          "max_length": 20,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "脱敏联系电话",
+          "sql_type": "varchar(20)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "is_primary",
+          "column_id": 7,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "是否主联系人",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "guardian",
+          "column_id": 8,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "监护人标记",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "user_id",
+          "column_id": 9,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联登录账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "authorized_from",
+          "column_id": 10,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "代办授权生效时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "contact",
+          "name": "authorized_until",
+          "column_id": 11,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "代办授权终止时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "contact",
+          "name": "active",
+          "column_id": 12,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((1))",
+          "description": "是否启用",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((1))"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {
+        "UX_contact_primary": {
+          "columns": [
+            "elderly_id"
+          ],
+          "filter": "([is_primary]=(1) AND [active]=(1))"
+        }
+      },
+      "checks": [
+        "([authorized_until] IS NULL OR [authorized_until]>[authorized_from])"
+      ]
+    },
+    "assessment": {
+      "label": "能力评估",
+      "columns": [
+        {
+          "table_name": "assessment",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "assessment",
+          "name": "elderly_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联老人",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → elderly.id",
+            "UK(elderly_id,assessed_on)"
+          ]
+        },
+        {
+          "table_name": "assessment",
+          "name": "scale",
+          "column_id": 3,
+          "type": "varchar",
+          "max_length": 8,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "评估量表 ADL或MMSE",
+          "sql_type": "varchar(8)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "assessment",
+          "name": "score",
+          "column_id": 4,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 5,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "量表得分或抽查评分",
+          "sql_type": "decimal(5,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "assessment",
+          "name": "ability_level",
+          "column_id": 5,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "能力等级 0至3",
+          "sql_type": "tinyint",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "assessment",
+          "name": "assessor_id",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "评估人员账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "assessment",
+          "name": "assessed_on",
+          "column_id": 7,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "评估日期",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL",
+            "UK(elderly_id,assessed_on)"
+          ]
+        },
+        {
+          "table_name": "assessment",
+          "name": "valid_until",
+          "column_id": 8,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "有效期截止 含当日",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__assessme__1C577354E94AC7DD": [
+          "elderly_id",
+          "assessed_on"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([ability_level]>=(0) AND [ability_level]<=(3))",
+        "([scale]='MMSE' OR [scale]='ADL')",
+        "([valid_until]>=[assessed_on])",
+        "([scale]='ADL' AND ([score]>=(0) AND [score]<=(100)) OR [scale]='MMSE' AND ([score]>=(0) AND [score]<=(30)))"
+      ]
+    },
+    "service_item": {
+      "label": "服务项目",
+      "columns": [
+        {
+          "table_name": "service_item",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_item",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 120,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(60)",
+          "constraints": [
+            "NOT NULL",
+            "UK(name)"
+          ]
+        },
+        {
+          "table_name": "service_item",
+          "name": "category",
+          "column_id": 3,
+          "type": "nvarchar",
+          "max_length": 20,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务类别",
+          "sql_type": "nvarchar(10)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_item",
+          "name": "unit",
+          "column_id": 4,
+          "type": "varchar",
+          "max_length": 8,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "计价单位或指标单位",
+          "sql_type": "varchar(8)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_item",
+          "name": "price",
+          "column_id": 5,
+          "type": "decimal",
+          "max_length": 9,
+          "precision": 10,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "当前指导价 元",
+          "sql_type": "decimal(10,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_item",
+          "name": "duration_minutes",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "标准或预约分钟数",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_item",
+          "name": "subsidized",
+          "column_id": 7,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((1))",
+          "description": "是否可申请补贴",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((1))"
+          ]
+        },
+        {
+          "table_name": "service_item",
+          "name": "certificate_type",
+          "column_id": 8,
+          "type": "nvarchar",
+          "max_length": 80,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "证书类型",
+          "sql_type": "nvarchar(40)",
+          "constraints": []
+        },
+        {
+          "table_name": "service_item",
+          "name": "certificate_level",
+          "column_id": 9,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "最低证书等级 1至3",
+          "sql_type": "tinyint",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__service___72E12F1B5D7B524B": [
+          "name"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([category]=N'康复护理' OR [category]=N'家政' OR [category]=N'陪诊' OR [category]=N'助浴' OR [category]=N'助餐')",
+        "([duration_minutes]>=(1) AND [duration_minutes]<=(720))",
+        "([price]>=(0))",
+        "([unit]='hour' OR [unit]='visit')",
+        "([certificate_type] IS NULL AND [certificate_level] IS NULL OR [certificate_type] IS NOT NULL AND ([certificate_level]>=(1) AND [certificate_level]<=(3)))"
+      ]
+    },
+    "service_package": {
+      "label": "服务包",
+      "columns": [
+        {
+          "table_name": "service_package",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_package",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 160,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(80)",
+          "constraints": [
+            "NOT NULL",
+            "UK(name)"
+          ]
+        },
+        {
+          "table_name": "service_package",
+          "name": "ability_level",
+          "column_id": 3,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "能力等级 0至3",
+          "sql_type": "tinyint",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_package",
+          "name": "active",
+          "column_id": 4,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((1))",
+          "description": "是否启用",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((1))"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__service___72E12F1B5E7A74B8": [
+          "name"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([ability_level]>=(0) AND [ability_level]<=(3))"
+      ]
+    },
+    "package_item": {
+      "label": "服务包项目",
+      "columns": [
+        {
+          "table_name": "package_item",
+          "name": "package_id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务包编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → service_package.id"
+          ]
+        },
+        {
+          "table_name": "package_item",
+          "name": "item_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务项目编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → service_item.id"
+          ]
+        },
+        {
+          "table_name": "package_item",
+          "name": "frequency",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "计划服务频次",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "package_item",
+          "name": "period",
+          "column_id": 4,
+          "type": "varchar",
+          "max_length": 8,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "频次周期 周或月",
+          "sql_type": "varchar(8)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        }
+      ],
+      "primary_key": [
+        "package_id",
+        "item_id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([frequency]>(0))",
+        "([period]='month' OR [period]='week')"
+      ]
+    },
+    "worker": {
+      "label": "护工档案",
+      "columns": [
+        {
+          "table_name": "worker",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 80,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(40)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "agency_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属服务机构",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → agency.id"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "user_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联登录账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id",
+            "UK(user_id)"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "available_from",
+          "column_id": 5,
+          "type": "time",
+          "max_length": 3,
+          "precision": 8,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('07:00')",
+          "description": "每日最早服务时刻",
+          "sql_type": "time(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('07:00')"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "available_until",
+          "column_id": 6,
+          "type": "time",
+          "max_length": 3,
+          "precision": 8,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('21:00')",
+          "description": "每日最晚服务时刻",
+          "sql_type": "time(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('21:00')"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "trained_on",
+          "column_id": 7,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "岗前培训完成日期",
+          "sql_type": "date",
+          "constraints": []
+        },
+        {
+          "table_name": "worker",
+          "name": "status",
+          "column_id": 8,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('active')",
+          "description": "业务状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('active')"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "total_hours",
+          "column_id": 9,
+          "type": "decimal",
+          "max_length": 9,
+          "precision": 12,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "累计已完成有效工时 小时",
+          "sql_type": "decimal(12,2)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "worker",
+          "name": "points",
+          "column_id": 10,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "已完成服务积分",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__worker__B9BE370E89E29E9F": [
+          "user_id"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([available_until]>[available_from])",
+        "([points]>=(0))",
+        "([status]='left' OR [status]='leave' OR [status]='active')",
+        "([total_hours]>=(0))"
+      ]
+    },
+    "certificate": {
+      "label": "护工资质",
+      "columns": [
+        {
+          "table_name": "certificate",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "certificate",
+          "name": "worker_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "护工编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → worker.id"
+          ]
+        },
+        {
+          "table_name": "certificate",
+          "name": "certificate_type",
+          "column_id": 3,
+          "type": "nvarchar",
+          "max_length": 80,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "证书类型",
+          "sql_type": "nvarchar(40)",
+          "constraints": [
+            "NOT NULL",
+            "UK(certificate_type,number)"
+          ]
+        },
+        {
+          "table_name": "certificate",
+          "name": "level",
+          "column_id": 4,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "证书或应急等级 1至3",
+          "sql_type": "tinyint",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "certificate",
+          "name": "number",
+          "column_id": 5,
+          "type": "varchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "证书编号",
+          "sql_type": "varchar(40)",
+          "constraints": [
+            "NOT NULL",
+            "UK(certificate_type,number)"
+          ]
+        },
+        {
+          "table_name": "certificate",
+          "name": "issued_on",
+          "column_id": 6,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "证书发证日期",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "certificate",
+          "name": "valid_until",
+          "column_id": 7,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "有效期截止 含当日",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__certific__6892990C370E6C93": [
+          "certificate_type",
+          "number"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([level]>=(1) AND [level]<=(3))",
+        "([valid_until]>=[issued_on])"
+      ]
+    },
+    "worker_skill": {
+      "label": "护工服务项目",
+      "columns": [
+        {
+          "table_name": "worker_skill",
+          "name": "worker_id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "护工编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → worker.id"
+          ]
+        },
+        {
+          "table_name": "worker_skill",
+          "name": "item_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务项目编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → service_item.id"
+          ]
+        }
+      ],
+      "primary_key": [
+        "worker_id",
+        "item_id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": []
+    },
+    "worker_area": {
+      "label": "护工服务区域",
+      "columns": [
+        {
+          "table_name": "worker_area",
+          "name": "worker_id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "护工编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → worker.id"
+          ]
+        },
+        {
+          "table_name": "worker_area",
+          "name": "community_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属社区或发生时社区",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → community.id"
+          ]
+        }
+      ],
+      "primary_key": [
+        "worker_id",
+        "community_id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": []
+    },
+    "care_plan": {
+      "label": "照护计划",
+      "columns": [
+        {
+          "table_name": "care_plan",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "care_plan",
+          "name": "elderly_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联老人",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → elderly.id"
+          ]
+        },
+        {
+          "table_name": "care_plan",
+          "name": "package_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务包编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → service_package.id"
+          ]
+        },
+        {
+          "table_name": "care_plan",
+          "name": "worker_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "护工编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → worker.id"
+          ]
+        },
+        {
+          "table_name": "care_plan",
+          "name": "starts_on",
+          "column_id": 5,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "生效日期 含当日",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "care_plan",
+          "name": "ends_on",
+          "column_id": 6,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "失效日期 含当日",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "care_plan",
+          "name": "status",
+          "column_id": 7,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('active')",
+          "description": "业务状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('active')"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([ends_on]>=[starts_on])",
+        "([status]='ended' OR [status]='paused' OR [status]='active' OR [status]='draft')"
+      ]
+    },
+    "plan_item": {
+      "label": "计划项目",
+      "columns": [
+        {
+          "table_name": "plan_item",
+          "name": "plan_id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "照护计划编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → care_plan.id"
+          ]
+        },
+        {
+          "table_name": "plan_item",
+          "name": "item_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务项目编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → service_item.id"
+          ]
+        },
+        {
+          "table_name": "plan_item",
+          "name": "frequency",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "计划服务频次",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "plan_item",
+          "name": "period",
+          "column_id": 4,
+          "type": "varchar",
+          "max_length": 8,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "频次周期 周或月",
+          "sql_type": "varchar(8)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        }
+      ],
+      "primary_key": [
+        "plan_id",
+        "item_id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([frequency]>(0))",
+        "([period]='month' OR [period]='week')"
+      ]
+    },
+    "shift": {
+      "label": "护工排班",
+      "columns": [
+        {
+          "table_name": "shift",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "shift",
+          "name": "worker_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "护工编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → worker.id"
+          ]
+        },
+        {
+          "table_name": "shift",
+          "name": "starts_at",
+          "column_id": 3,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "班次开始 左闭",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "shift",
+          "name": "ends_at",
+          "column_id": 4,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "班次结束 右开",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "shift",
+          "name": "capacity",
+          "column_id": 5,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "班次可接单量",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "shift",
+          "name": "used_slots",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "已占用及使用名额",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "shift",
+          "name": "status",
+          "column_id": 7,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('published')",
+          "description": "业务状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('published')"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([ends_at]>[starts_at] AND CONVERT([date],[starts_at])=CONVERT([date],[ends_at]))",
+        "([used_slots]>=(0) AND [used_slots]<=[capacity])",
+        "([capacity]>(0))",
+        "([status]='closed' OR [status]='published' OR [status]='draft')"
+      ]
+    },
+    "service_order": {
+      "label": "服务订单",
+      "columns": [
+        {
+          "table_name": "service_order",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "request_key",
+          "column_id": 2,
+          "type": "varchar",
+          "max_length": 64,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "客户端请求唯一编号",
+          "sql_type": "varchar(64)",
+          "constraints": [
+            "NOT NULL",
+            "UK(request_key)"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "elderly_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联老人",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → elderly.id"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "item_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务项目编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → service_item.id"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "community_id",
+          "column_id": 5,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属社区或发生时社区",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → community.id"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "created_by",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "下单账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "created_at",
+          "column_id": 7,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "记录创建时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "scheduled_at",
+          "column_id": 8,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "预约开始时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "duration_minutes",
+          "column_id": 9,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "标准或预约分钟数",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "address",
+          "column_id": 10,
+          "type": "nvarchar",
+          "max_length": 400,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "居住地址或服务地址快照",
+          "sql_type": "nvarchar(200)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "longitude",
+          "column_id": 11,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "经度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "latitude",
+          "column_id": 12,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "纬度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "unit_price",
+          "column_id": 13,
+          "type": "decimal",
+          "max_length": 9,
+          "precision": 10,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "成交单价快照 元",
+          "sql_type": "decimal(10,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "price_unit",
+          "column_id": 14,
+          "type": "varchar",
+          "max_length": 8,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "计价方式快照 次或小时",
+          "sql_type": "varchar(8)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "channel",
+          "column_id": 15,
+          "type": "nvarchar",
+          "max_length": 24,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "下单渠道",
+          "sql_type": "nvarchar(12)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "status",
+          "column_id": 16,
+          "type": "varchar",
+          "max_length": 16,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('pending')",
+          "description": "业务状态",
+          "sql_type": "varchar(16)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('pending')"
+          ]
+        },
+        {
+          "table_name": "service_order",
+          "name": "settlement",
+          "column_id": 17,
+          "type": "decimal",
+          "max_length": 9,
+          "precision": 12,
+          "scale": 2,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "已完成订单结算金额 元",
+          "sql_type": "decimal(12,2)",
+          "constraints": []
+        },
+        {
+          "table_name": "service_order",
+          "name": "completed_at",
+          "column_id": 18,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "完成结算时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "service_order",
+          "name": "rating",
+          "column_id": 19,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "老人评价 1至5",
+          "sql_type": "tinyint",
+          "constraints": []
+        },
+        {
+          "table_name": "service_order",
+          "name": "feedback",
+          "column_id": 20,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "评价内容",
+          "sql_type": "nvarchar(500)",
+          "constraints": []
+        },
+        {
+          "table_name": "service_order",
+          "name": "complaint",
+          "column_id": 21,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "投诉内容",
+          "sql_type": "nvarchar(500)",
+          "constraints": []
+        },
+        {
+          "table_name": "service_order",
+          "name": "complaint_result",
+          "column_id": 22,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "投诉处理结果",
+          "sql_type": "nvarchar(500)",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__service___A423FD21C4C2DD0B": [
+          "request_key"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([channel]=N'社区代下单' OR [channel]=N'家属端' OR [channel]=N'电话')",
+        "([duration_minutes]>=(1) AND [duration_minutes]<=(720))",
+        "([latitude]>=(-90) AND [latitude]<=(90))",
+        "([longitude]>=(-180) AND [longitude]<=(180))",
+        "([price_unit]='hour' OR [price_unit]='visit')",
+        "([rating]>=(1) AND [rating]<=(5))",
+        "([settlement]>=(0))",
+        "([status]='terminated' OR [status]='exception' OR [status]='cancelled' OR [status]='completed' OR [status]='confirming' OR [status]='serving' OR [status]='accepted' OR [status]='offered' OR [status]='pending' OR [status]='ineligible')",
+        "([unit_price]>=(0))",
+        "(CONVERT([date],[scheduled_at])=CONVERT([date],dateadd(minute,[duration_minutes],[scheduled_at])))"
+      ]
+    },
+    "assignment": {
+      "label": "派单记录",
+      "columns": [
+        {
+          "table_name": "assignment",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "order_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务订单编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → service_order.id",
+            "UNIQUE(order_id) WHERE ([is_current]=(1))"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "shift_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "排班编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → shift.id"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "dispatcher_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "派单人员账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "assigned_at",
+          "column_id": 5,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "派单时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "accepted_at",
+          "column_id": 6,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "接单时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "assignment",
+          "name": "status",
+          "column_id": 7,
+          "type": "varchar",
+          "max_length": 12,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('offered')",
+          "description": "业务状态",
+          "sql_type": "varchar(12)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('offered')"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "is_current",
+          "column_id": 8,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((1))",
+          "description": "是否当前或最终派单",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((1))"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "reason",
+          "column_id": 9,
+          "type": "nvarchar",
+          "max_length": 400,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "改派或释放原因",
+          "sql_type": "nvarchar(200)",
+          "constraints": []
+        },
+        {
+          "table_name": "assignment",
+          "name": "service_record",
+          "column_id": 10,
+          "type": "nvarchar",
+          "max_length": 2000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "实际服务内容",
+          "sql_type": "nvarchar(1000)",
+          "constraints": []
+        },
+        {
+          "table_name": "assignment",
+          "name": "confirmed_by",
+          "column_id": 11,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "老人或授权家属确认账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "assignment",
+          "name": "confirmed_at",
+          "column_id": 12,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务确认时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "assignment",
+          "name": "proof_reference",
+          "column_id": 13,
+          "type": "nvarchar",
+          "max_length": 400,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "证明材料引用",
+          "sql_type": "nvarchar(200)",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {
+        "UX_assignment_current": {
+          "columns": [
+            "order_id"
+          ],
+          "filter": "([is_current]=(1))"
+        }
+      },
+      "checks": [
+        "([status]='terminated' OR [status]='invalid' OR [status]='reassigned' OR [status]='timeout' OR [status]='rejected' OR [status]='completed' OR [status]='accepted' OR [status]='offered')"
+      ]
+    },
+    "work_log": {
+      "label": "工时记录",
+      "columns": [
+        {
+          "table_name": "work_log",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "assignment_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "派单编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → assignment.id",
+            "UK(assignment_id)"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "checkin_at",
+          "column_id": 3,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "签到时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "checkout_at",
+          "column_id": 4,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "签退时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "work_log",
+          "name": "longitude",
+          "column_id": 5,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "经度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "latitude",
+          "column_id": 6,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 9,
+          "scale": 6,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "纬度",
+          "sql_type": "decimal(9,6)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "geofence_ok",
+          "column_id": 7,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "签到位置校验结果",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "valid_hours",
+          "column_id": 8,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 8,
+          "scale": 2,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "认定有效工时 小时",
+          "sql_type": "decimal(8,2)",
+          "constraints": []
+        },
+        {
+          "table_name": "work_log",
+          "name": "review_status",
+          "column_id": 9,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('pending')",
+          "description": "工时复核状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('pending')"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "reviewer_id",
+          "column_id": 10,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "审核或复核账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "work_log",
+          "name": "review_note",
+          "column_id": 11,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "工时复核依据",
+          "sql_type": "nvarchar(500)",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__work_log__DA89181525EAC6AE": [
+          "assignment_id"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([checkout_at] IS NULL OR [checkout_at]>[checkin_at])",
+        "([latitude]>=(-90) AND [latitude]<=(90))",
+        "([longitude]>=(-180) AND [longitude]<=(180))",
+        "([review_status]='rejected' OR [review_status]='approved' OR [review_status]='auto' OR [review_status]='pending')",
+        "([valid_hours]>(0))"
+      ]
+    },
+    "eligibility_snapshot": {
+      "label": "服务准入依据",
+      "columns": [
+        {
+          "table_name": "eligibility_snapshot",
+          "name": "order_id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务订单编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → service_order.id"
+          ]
+        },
+        {
+          "table_name": "eligibility_snapshot",
+          "name": "assessment_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务所用评估编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → assessment.id"
+          ]
+        },
+        {
+          "table_name": "eligibility_snapshot",
+          "name": "plan_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "照护计划编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → care_plan.id"
+          ]
+        },
+        {
+          "table_name": "eligibility_snapshot",
+          "name": "low_income",
+          "column_id": 4,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "低保资格",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "eligibility_snapshot",
+          "name": "checked_at",
+          "column_id": 5,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "核验或抽查时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        },
+        {
+          "table_name": "eligibility_snapshot",
+          "name": "checked_by",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "资格核验账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        }
+      ],
+      "primary_key": [
+        "order_id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": []
+    },
+    "device": {
+      "label": "监测设备",
+      "columns": [
+        {
+          "table_name": "device",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "device",
+          "name": "serial_number",
+          "column_id": 2,
+          "type": "varchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "设备序列号",
+          "sql_type": "varchar(40)",
+          "constraints": [
+            "NOT NULL",
+            "UK(serial_number)"
+          ]
+        },
+        {
+          "table_name": "device",
+          "name": "device_type",
+          "column_id": 3,
+          "type": "nvarchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "监测设备类型",
+          "sql_type": "nvarchar(20)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "device",
+          "name": "location",
+          "column_id": 4,
+          "type": "nvarchar",
+          "max_length": 200,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "设备安装位置",
+          "sql_type": "nvarchar(100)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "device",
+          "name": "status",
+          "column_id": 5,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('online')",
+          "description": "业务状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('online')"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__device__BED14FEE195D9059": [
+          "serial_number"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([status]='inactive' OR [status]='fault' OR [status]='offline' OR [status]='online')"
+      ]
+    },
+    "device_binding": {
+      "label": "设备绑定",
+      "columns": [
+        {
+          "table_name": "device_binding",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "device_binding",
+          "name": "device_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "设备编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → device.id",
+            "UNIQUE(device_id) WHERE ([unbound_at] IS NULL)"
+          ]
+        },
+        {
+          "table_name": "device_binding",
+          "name": "elderly_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联老人",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → elderly.id"
+          ]
+        },
+        {
+          "table_name": "device_binding",
+          "name": "bound_at",
+          "column_id": 4,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "绑定开始 左闭",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "device_binding",
+          "name": "unbound_at",
+          "column_id": 5,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "解绑时刻 右开",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "device_binding",
+          "name": "operator_id",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "绑定操作账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {
+        "UX_binding_current": {
+          "columns": [
+            "device_id"
+          ],
+          "filter": "([unbound_at] IS NULL)"
+        }
+      },
+      "checks": [
+        "([unbound_at] IS NULL OR [unbound_at]>[bound_at])"
+      ]
+    },
+    "metric_rule": {
+      "label": "指标阈值",
+      "columns": [
+        {
+          "table_name": "metric_rule",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "metric_rule",
+          "name": "community_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属社区或发生时社区",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → community.id",
+            "UK(community_id,metric)"
+          ]
+        },
+        {
+          "table_name": "metric_rule",
+          "name": "metric",
+          "column_id": 3,
+          "type": "varchar",
+          "max_length": 24,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "指标代码",
+          "sql_type": "varchar(24)",
+          "constraints": [
+            "NOT NULL",
+            "UK(community_id,metric)"
+          ]
+        },
+        {
+          "table_name": "metric_rule",
+          "name": "unit",
+          "column_id": 4,
+          "type": "nvarchar",
+          "max_length": 24,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "计价单位或指标单位",
+          "sql_type": "nvarchar(12)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "metric_rule",
+          "name": "lower_bound",
+          "column_id": 5,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 8,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "阈值下限",
+          "sql_type": "decimal(8,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "metric_rule",
+          "name": "upper_bound",
+          "column_id": 6,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 8,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "阈值上限",
+          "sql_type": "decimal(8,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__metric_r__40851C251A64A0D1": [
+          "community_id",
+          "metric"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([upper_bound]>=[lower_bound])"
+      ]
+    },
+    "vital": {
+      "label": "体征记录",
+      "columns": [
+        {
+          "table_name": "vital",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "binding_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "采集时设备绑定记录",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → device_binding.id",
+            "UK(binding_id,rule_id,collected_at)"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "rule_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "阈值配置编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → metric_rule.id",
+            "UK(binding_id,rule_id,collected_at)"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "collected_at",
+          "column_id": 4,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "设备采集时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "UK(binding_id,rule_id,collected_at)"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "received_at",
+          "column_id": 5,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "平台接收时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "value",
+          "column_id": 6,
+          "type": "decimal",
+          "max_length": 5,
+          "precision": 8,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "指标采集值",
+          "sql_type": "decimal(8,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "abnormal",
+          "column_id": 7,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "超出阈值标记",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "confirmation",
+          "column_id": 8,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('normal')",
+          "description": "体征核实状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('normal')"
+          ]
+        },
+        {
+          "table_name": "vital",
+          "name": "source",
+          "column_id": 9,
+          "type": "nvarchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(N'模拟设备')",
+          "description": "设备或求助来源",
+          "sql_type": "nvarchar(20)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (N'模拟设备')"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__vital__C94E933F1A0BFA2A": [
+          "binding_id",
+          "rule_id",
+          "collected_at"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([confirmation]='false' OR [confirmation]='confirmed' OR [confirmation]='pending' OR [confirmation]='normal')"
+      ]
+    },
+    "emergency": {
+      "label": "应急事件",
+      "columns": [
+        {
+          "table_name": "emergency",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "request_key",
+          "column_id": 2,
+          "type": "varchar",
+          "max_length": 64,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "客户端请求唯一编号",
+          "sql_type": "varchar(64)",
+          "constraints": [
+            "NOT NULL",
+            "UK(request_key)"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "elderly_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联老人",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → elderly.id"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "community_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属社区或发生时社区",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → community.id"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "vital_id",
+          "column_id": 5,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联异常体征",
+          "sql_type": "int",
+          "constraints": [
+            "FK → vital.id",
+            "UNIQUE(vital_id) WHERE ([vital_id] IS NOT NULL)"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "source",
+          "column_id": 6,
+          "type": "nvarchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "设备或求助来源",
+          "sql_type": "nvarchar(20)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "level",
+          "column_id": 7,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "证书或应急等级 1至3",
+          "sql_type": "tinyint",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "occurred_at",
+          "column_id": 8,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "应急事件发生时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "response_minutes",
+          "column_id": 9,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "响应时限 分钟",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "arrival_minutes",
+          "column_id": 10,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "到场时限 分钟",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "responder_id",
+          "column_id": 11,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "实际响应账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "responded_at",
+          "column_id": 12,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "开始响应时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "emergency",
+          "name": "arrived_at",
+          "column_id": 13,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "实际到场时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "emergency",
+          "name": "escalated_at",
+          "column_id": 14,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "首次升级时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "emergency",
+          "name": "status",
+          "column_id": 15,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('open')",
+          "description": "业务状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('open')"
+          ]
+        },
+        {
+          "table_name": "emergency",
+          "name": "result",
+          "column_id": 16,
+          "type": "nvarchar",
+          "max_length": 2000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "处置或整改结果",
+          "sql_type": "nvarchar(1000)",
+          "constraints": []
+        },
+        {
+          "table_name": "emergency",
+          "name": "closed_at",
+          "column_id": 17,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "事件关闭时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__emergenc__A423FD215A0B7192": [
+          "request_key"
+        ]
+      },
+      "filtered_unique": {
+        "UX_emergency_vital": {
+          "columns": [
+            "vital_id"
+          ],
+          "filter": "([vital_id] IS NOT NULL)"
+        }
+      },
+      "checks": [
+        "([arrival_minutes]>=[response_minutes])",
+        "([responded_at] IS NULL OR [responded_at]>=[occurred_at])",
+        "([arrived_at] IS NULL OR [responded_at] IS NOT NULL AND [arrived_at]>=[responded_at])",
+        "([status]<>'closed' OR [result] IS NOT NULL AND [closed_at] IS NOT NULL)",
+        "([arrival_minutes]>(0))",
+        "([level]>=(1) AND [level]<=(3))",
+        "([response_minutes]>(0))",
+        "([status]='closed' OR [status]='handling' OR [status]='open')"
+      ]
+    },
+    "notification": {
+      "label": "通知记录",
+      "columns": [
+        {
+          "table_name": "notification",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "notification",
+          "name": "event_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "应急事件编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → emergency.id",
+            "UK(event_id,recipient,stage)"
+          ]
+        },
+        {
+          "table_name": "notification",
+          "name": "recipient",
+          "column_id": 3,
+          "type": "nvarchar",
+          "max_length": 160,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "模拟通知接收对象",
+          "sql_type": "nvarchar(80)",
+          "constraints": [
+            "NOT NULL",
+            "UK(event_id,recipient,stage)"
+          ]
+        },
+        {
+          "table_name": "notification",
+          "name": "stage",
+          "column_id": 4,
+          "type": "varchar",
+          "max_length": 12,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "通知或审核阶段",
+          "sql_type": "varchar(12)",
+          "constraints": [
+            "NOT NULL",
+            "UK(event_id,recipient,stage)"
+          ]
+        },
+        {
+          "table_name": "notification",
+          "name": "status",
+          "column_id": 5,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('pending')",
+          "description": "业务状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('pending')"
+          ]
+        },
+        {
+          "table_name": "notification",
+          "name": "attempts",
+          "column_id": 6,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "发送尝试次数",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "notification",
+          "name": "last_attempt_at",
+          "column_id": 7,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "最近发送时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        },
+        {
+          "table_name": "notification",
+          "name": "error",
+          "column_id": 8,
+          "type": "nvarchar",
+          "max_length": 400,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "通知失败原因",
+          "sql_type": "nvarchar(200)",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__notifica__3924BF7C09ACC1AA": [
+          "event_id",
+          "recipient",
+          "stage"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([attempts]>=(0) AND [attempts]<=(3))",
+        "([stage]='arrival' OR [stage]='escalated' OR [stage]='created')",
+        "([status]='manual' OR [status]='failed' OR [status]='sent' OR [status]='pending')"
+      ]
+    },
+    "subsidy_policy": {
+      "label": "补贴政策",
+      "columns": [
+        {
+          "table_name": "subsidy_policy",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "name",
+          "column_id": 2,
+          "type": "nvarchar",
+          "max_length": 200,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "名称",
+          "sql_type": "nvarchar(100)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "district_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属区县",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → area.id"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "item_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务项目编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → service_item.id"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "ability_level",
+          "column_id": 5,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "能力等级 0至3",
+          "sql_type": "tinyint",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "low_income_only",
+          "column_id": 6,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "是否限低保对象",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "rate",
+          "column_id": 7,
+          "type": "decimal",
+          "max_length": 9,
+          "precision": 10,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "每次或每小时补贴额 元",
+          "sql_type": "decimal(10,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "starts_on",
+          "column_id": 8,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "生效日期 含当日",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_policy",
+          "name": "ends_on",
+          "column_id": 9,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "失效日期 含当日",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([ability_level]>=(0) AND [ability_level]<=(3))",
+        "([rate]>=(0))",
+        "([starts_on]<=[ends_on] AND datepart(day,[starts_on])=(1) AND [ends_on]=eomonth([ends_on]))"
+      ]
+    },
+    "subsidy_claim": {
+      "label": "补贴申报",
+      "columns": [
+        {
+          "table_name": "subsidy_claim",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "elderly_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "关联老人",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → elderly.id",
+            "UK(elderly_id,item_id,month)"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "item_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务项目编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → service_item.id",
+            "UK(elderly_id,item_id,month)"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "month",
+          "column_id": 4,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "自然月首日",
+          "sql_type": "date",
+          "constraints": [
+            "NOT NULL",
+            "UK(elderly_id,item_id,month)"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "community_id",
+          "column_id": 5,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "所属社区或发生时社区",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → community.id"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "amount",
+          "column_id": 6,
+          "type": "decimal",
+          "max_length": 9,
+          "precision": 12,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "申报或补贴金额 元",
+          "sql_type": "decimal(12,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "status",
+          "column_id": 7,
+          "type": "varchar",
+          "max_length": 12,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('street')",
+          "description": "业务状态",
+          "sql_type": "varchar(12)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('street')"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "submitted_by",
+          "column_id": 8,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "申报人员账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "submitted_at",
+          "column_id": 9,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "最近提交时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "evidence",
+          "column_id": 10,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "申报材料说明",
+          "sql_type": "nvarchar(500)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "payment_reference",
+          "column_id": 11,
+          "type": "varchar",
+          "max_length": 60,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "唯一拨付凭证号",
+          "sql_type": "varchar(60)",
+          "constraints": [
+            "UNIQUE(payment_reference) WHERE ([payment_reference] IS NOT NULL)"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "paid_by",
+          "column_id": 12,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "拨付经办账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "subsidy_claim",
+          "name": "paid_at",
+          "column_id": 13,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "拨付登记时间",
+          "sql_type": "datetime2(0)",
+          "constraints": []
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {
+        "UQ__subsidy___C13B1FF457AD719E": [
+          "elderly_id",
+          "item_id",
+          "month"
+        ]
+      },
+      "filtered_unique": {
+        "UX_claim_payment": {
+          "columns": [
+            "payment_reference"
+          ],
+          "filter": "([payment_reference] IS NOT NULL)"
+        }
+      },
+      "checks": [
+        "([amount]>=(0))",
+        "(datepart(day,[month])=(1))",
+        "([status]='paid' OR [status]='approved' OR [status]='rejected' OR [status]='returned' OR [status]='civil' OR [status]='street' OR [status]='draft')"
+      ]
+    },
+    "claim_item": {
+      "label": "申报明细",
+      "columns": [
+        {
+          "table_name": "claim_item",
+          "name": "claim_id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "补贴申报编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → subsidy_claim.id"
+          ]
+        },
+        {
+          "table_name": "claim_item",
+          "name": "order_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务订单编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "NOT NULL",
+            "FK → service_order.id",
+            "UK(order_id)"
+          ]
+        },
+        {
+          "table_name": "claim_item",
+          "name": "policy_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "使用的政策版本",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → subsidy_policy.id"
+          ]
+        },
+        {
+          "table_name": "claim_item",
+          "name": "amount",
+          "column_id": 4,
+          "type": "decimal",
+          "max_length": 9,
+          "precision": 12,
+          "scale": 2,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "申报或补贴金额 元",
+          "sql_type": "decimal(12,2)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        }
+      ],
+      "primary_key": [
+        "claim_id",
+        "order_id"
+      ],
+      "unique_keys": {
+        "UQ__claim_it__465962283F458BDE": [
+          "order_id"
+        ]
+      },
+      "filtered_unique": {},
+      "checks": [
+        "([amount]>=(0))"
+      ]
+    },
+    "claim_review": {
+      "label": "审核记录",
+      "columns": [
+        {
+          "table_name": "claim_review",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "claim_review",
+          "name": "claim_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "补贴申报编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → subsidy_claim.id"
+          ]
+        },
+        {
+          "table_name": "claim_review",
+          "name": "stage",
+          "column_id": 3,
+          "type": "varchar",
+          "max_length": 8,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "通知或审核阶段",
+          "sql_type": "varchar(8)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "claim_review",
+          "name": "reviewer_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "审核或复核账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "claim_review",
+          "name": "decision",
+          "column_id": 5,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "审核结论",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "claim_review",
+          "name": "note",
+          "column_id": 6,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "审核意见",
+          "sql_type": "nvarchar(500)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "claim_review",
+          "name": "reviewed_at",
+          "column_id": 7,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "审核时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([decision]='reject' OR [decision]='return' OR [decision]='approve')",
+        "([stage]='civil' OR [stage]='street')"
+      ]
+    },
+    "quality_check": {
+      "label": "质量抽查",
+      "columns": [
+        {
+          "table_name": "quality_check",
+          "name": "id",
+          "column_id": 1,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "int",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "order_id",
+          "column_id": 2,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "服务订单编号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → service_order.id"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "worker_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "护工编号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → worker.id"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "inspector_id",
+          "column_id": 4,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "质量抽查账号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL",
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "method",
+          "column_id": 5,
+          "type": "nvarchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "抽查方式",
+          "sql_type": "nvarchar(20)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "score",
+          "column_id": 6,
+          "type": "tinyint",
+          "max_length": 1,
+          "precision": 3,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "量表得分或抽查评分",
+          "sql_type": "tinyint",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "issue",
+          "column_id": 7,
+          "type": "nvarchar",
+          "max_length": 400,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "问题说明",
+          "sql_type": "nvarchar(200)",
+          "constraints": []
+        },
+        {
+          "table_name": "quality_check",
+          "name": "requirement",
+          "column_id": 8,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "整改要求",
+          "sql_type": "nvarchar(500)",
+          "constraints": []
+        },
+        {
+          "table_name": "quality_check",
+          "name": "restrict_agency",
+          "column_id": 9,
+          "type": "bit",
+          "max_length": 1,
+          "precision": 1,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "((0))",
+          "description": "是否限制整个机构",
+          "sql_type": "bit",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ((0))"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "restricted_item_id",
+          "column_id": 10,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "受限项目 空值表示全部",
+          "sql_type": "int",
+          "constraints": [
+            "FK → service_item.id"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "due_on",
+          "column_id": 11,
+          "type": "date",
+          "max_length": 3,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "整改截止日期",
+          "sql_type": "date",
+          "constraints": []
+        },
+        {
+          "table_name": "quality_check",
+          "name": "result",
+          "column_id": 12,
+          "type": "nvarchar",
+          "max_length": 1000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "处置或整改结果",
+          "sql_type": "nvarchar(500)",
+          "constraints": []
+        },
+        {
+          "table_name": "quality_check",
+          "name": "status",
+          "column_id": 13,
+          "type": "varchar",
+          "max_length": 10,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "('clear')",
+          "description": "业务状态",
+          "sql_type": "varchar(10)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT ('clear')"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "reviewer_id",
+          "column_id": 14,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "审核或复核账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "quality_check",
+          "name": "checked_at",
+          "column_id": 15,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "核验或抽查时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": [
+        "([method]=N'上门核查' OR [method]=N'电话回访')",
+        "([score]>=(1) AND [score]<=(5))",
+        "([status]='resolved' OR [status]='review' OR [status]='open' OR [status]='clear')",
+        "([order_id] IS NULL AND [worker_id] IS NOT NULL OR [order_id] IS NOT NULL AND [worker_id] IS NULL)",
+        "([status]='clear' OR [issue] IS NOT NULL AND [requirement] IS NOT NULL AND [due_on] IS NOT NULL)"
+      ]
+    },
+    "audit_log": {
+      "label": "操作审计",
+      "columns": [
+        {
+          "table_name": "audit_log",
+          "name": "id",
+          "column_id": 1,
+          "type": "bigint",
+          "max_length": 8,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": true,
+          "default_value": null,
+          "description": "记录编号",
+          "sql_type": "bigint",
+          "constraints": [
+            "PK",
+            "IDENTITY",
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "audit_log",
+          "name": "entity",
+          "column_id": 2,
+          "type": "varchar",
+          "max_length": 30,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "审计对象类型",
+          "sql_type": "varchar(30)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "audit_log",
+          "name": "entity_id",
+          "column_id": 3,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "审计对象编号",
+          "sql_type": "int",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "audit_log",
+          "name": "action",
+          "column_id": 4,
+          "type": "varchar",
+          "max_length": 40,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "操作名称",
+          "sql_type": "varchar(40)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "audit_log",
+          "name": "actor_id",
+          "column_id": 5,
+          "type": "int",
+          "max_length": 4,
+          "precision": 10,
+          "scale": 0,
+          "is_nullable": true,
+          "is_identity": false,
+          "default_value": null,
+          "description": "实际操作账号",
+          "sql_type": "int",
+          "constraints": [
+            "FK → app_user.id"
+          ]
+        },
+        {
+          "table_name": "audit_log",
+          "name": "detail",
+          "column_id": 6,
+          "type": "nvarchar",
+          "max_length": 2000,
+          "precision": 0,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": null,
+          "description": "操作原因或摘要",
+          "sql_type": "nvarchar(1000)",
+          "constraints": [
+            "NOT NULL"
+          ]
+        },
+        {
+          "table_name": "audit_log",
+          "name": "created_at",
+          "column_id": 7,
+          "type": "datetime2",
+          "max_length": 6,
+          "precision": 19,
+          "scale": 0,
+          "is_nullable": false,
+          "is_identity": false,
+          "default_value": "(sysdatetime())",
+          "description": "记录创建时间",
+          "sql_type": "datetime2(0)",
+          "constraints": [
+            "NOT NULL",
+            "DEFAULT (sysdatetime())"
+          ]
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "unique_keys": {},
+      "filtered_unique": {},
+      "checks": []
+    }
+  },
+  "relationships": [
+    {
+      "name": "FK__agency__district__59FA5E80",
+      "child": "agency",
+      "child_column": "district_id",
+      "parent": "area",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__app_user__commun__5FB337D6",
+      "child": "app_user",
+      "child_column": "community_id",
+      "parent": "community",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__app_user__agency__60A75C0F",
+      "child": "app_user",
+      "child_column": "agency_id",
+      "parent": "agency",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__app_user__area_i__619B8048",
+      "child": "app_user",
+      "child_column": "area_id",
+      "parent": "area",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__area__parent_id__4BAC3F29",
+      "child": "area",
+      "child_column": "parent_id",
+      "parent": "area",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__assessmen__elder__7A672E12",
+      "child": "assessment",
+      "child_column": "elderly_id",
+      "parent": "elderly",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__assessmen__asses__7D439ABD",
+      "child": "assessment",
+      "child_column": "assessor_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__assignmen__order__57DD0BE4",
+      "child": "assignment",
+      "child_column": "order_id",
+      "parent": "service_order",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__assignmen__shift__58D1301D",
+      "child": "assignment",
+      "child_column": "shift_id",
+      "parent": "shift",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__assignmen__dispa__59C55456",
+      "child": "assignment",
+      "child_column": "dispatcher_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__assignmen__confi__5E8A0973",
+      "child": "assignment",
+      "child_column": "confirmed_by",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__audit_log__actor__52E34C9D",
+      "child": "audit_log",
+      "child_column": "actor_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__care_plan__elder__2FCF1A8A",
+      "child": "care_plan",
+      "child_column": "elderly_id",
+      "parent": "elderly",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__care_plan__packa__30C33EC3",
+      "child": "care_plan",
+      "child_column": "package_id",
+      "parent": "service_package",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__care_plan__worke__31B762FC",
+      "child": "care_plan",
+      "child_column": "worker_id",
+      "parent": "worker",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__certifica__worke__236943A5",
+      "child": "certificate",
+      "child_column": "worker_id",
+      "parent": "worker",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__claim_ite__claim__382F5661",
+      "child": "claim_item",
+      "child_column": "claim_id",
+      "parent": "subsidy_claim",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__claim_ite__order__39237A9A",
+      "child": "claim_item",
+      "child_column": "order_id",
+      "parent": "service_order",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__claim_ite__polic__3A179ED3",
+      "child": "claim_item",
+      "child_column": "policy_id",
+      "parent": "subsidy_policy",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__claim_rev__claim__3DE82FB7",
+      "child": "claim_review",
+      "child_column": "claim_id",
+      "parent": "subsidy_claim",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__claim_rev__revie__3FD07829",
+      "child": "claim_review",
+      "child_column": "reviewer_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__community__stree__5070F446",
+      "child": "community",
+      "child_column": "street_id",
+      "parent": "area",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__contact__elderly__71D1E811",
+      "child": "contact",
+      "child_column": "elderly_id",
+      "parent": "elderly",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__contact__user_id__74AE54BC",
+      "child": "contact",
+      "child_column": "user_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__device_bi__devic__7755B73D",
+      "child": "device_binding",
+      "child_column": "device_id",
+      "parent": "device",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__device_bi__elder__7849DB76",
+      "child": "device_binding",
+      "child_column": "elderly_id",
+      "parent": "elderly",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__device_bi__opera__793DFFAF",
+      "child": "device_binding",
+      "child_column": "operator_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__elderly__communi__68487DD7",
+      "child": "elderly",
+      "child_column": "community_id",
+      "parent": "community",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__elderly__user_id__6EF57B66",
+      "child": "elderly",
+      "child_column": "user_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__eligibili__order__6BE40491",
+      "child": "eligibility_snapshot",
+      "child_column": "order_id",
+      "parent": "service_order",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__eligibili__asses__6CD828CA",
+      "child": "eligibility_snapshot",
+      "child_column": "assessment_id",
+      "parent": "assessment",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__eligibili__plan___6DCC4D03",
+      "child": "eligibility_snapshot",
+      "child_column": "plan_id",
+      "parent": "care_plan",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__eligibili__check__6FB49575",
+      "child": "eligibility_snapshot",
+      "child_column": "checked_by",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__emergency__elder__0C50D423",
+      "child": "emergency",
+      "child_column": "elderly_id",
+      "parent": "elderly",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__emergency__commu__0D44F85C",
+      "child": "emergency",
+      "child_column": "community_id",
+      "parent": "community",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__emergency__vital__0E391C95",
+      "child": "emergency",
+      "child_column": "vital_id",
+      "parent": "vital",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__emergency__respo__1209AD79",
+      "child": "emergency",
+      "child_column": "responder_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__metric_ru__commu__7E02B4CC",
+      "child": "metric_rule",
+      "child_column": "community_id",
+      "parent": "community",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__notificat__event__1B9317B3",
+      "child": "notification",
+      "child_column": "event_id",
+      "parent": "emergency",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__package_i__packa__0F624AF8",
+      "child": "package_item",
+      "child_column": "package_id",
+      "parent": "service_package",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__package_i__item___10566F31",
+      "child": "package_item",
+      "child_column": "item_id",
+      "parent": "service_item",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__plan_item__plan___37703C52",
+      "child": "plan_item",
+      "child_column": "plan_id",
+      "parent": "care_plan",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__plan_item__item___3864608B",
+      "child": "plan_item",
+      "child_column": "item_id",
+      "parent": "service_item",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__quality_c__order__44952D46",
+      "child": "quality_check",
+      "child_column": "order_id",
+      "parent": "service_order",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__quality_c__worke__4589517F",
+      "child": "quality_check",
+      "child_column": "worker_id",
+      "parent": "worker",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__quality_c__inspe__467D75B8",
+      "child": "quality_check",
+      "child_column": "inspector_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__quality_c__restr__4A4E069C",
+      "child": "quality_check",
+      "child_column": "restricted_item_id",
+      "parent": "service_item",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__quality_c__revie__4D2A7347",
+      "child": "quality_check",
+      "child_column": "reviewer_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__service_o__elder__46B27FE2",
+      "child": "service_order",
+      "child_column": "elderly_id",
+      "parent": "elderly",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__service_o__item___47A6A41B",
+      "child": "service_order",
+      "child_column": "item_id",
+      "parent": "service_item",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__service_o__commu__489AC854",
+      "child": "service_order",
+      "child_column": "community_id",
+      "parent": "community",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__service_o__creat__498EEC8D",
+      "child": "service_order",
+      "child_column": "created_by",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__shift__worker_id__3D2915A8",
+      "child": "shift",
+      "child_column": "worker_id",
+      "parent": "worker",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__subsidy_c__elder__2BC97F7C",
+      "child": "subsidy_claim",
+      "child_column": "elderly_id",
+      "parent": "elderly",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__subsidy_c__item___2CBDA3B5",
+      "child": "subsidy_claim",
+      "child_column": "item_id",
+      "parent": "service_item",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__subsidy_c__commu__2EA5EC27",
+      "child": "subsidy_claim",
+      "child_column": "community_id",
+      "parent": "community",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__subsidy_c__submi__32767D0B",
+      "child": "subsidy_claim",
+      "child_column": "submitted_by",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__subsidy_c__paid___345EC57D",
+      "child": "subsidy_claim",
+      "child_column": "paid_by",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__subsidy_p__distr__2334397B",
+      "child": "subsidy_policy",
+      "child_column": "district_id",
+      "parent": "area",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__subsidy_p__item___24285DB4",
+      "child": "subsidy_policy",
+      "child_column": "item_id",
+      "parent": "service_item",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__vital__binding_i__02C769E9",
+      "child": "vital",
+      "child_column": "binding_id",
+      "parent": "device_binding",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__vital__rule_id__03BB8E22",
+      "child": "vital",
+      "child_column": "rule_id",
+      "parent": "metric_rule",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__work_log__assign__625A9A57",
+      "child": "work_log",
+      "child_column": "assignment_id",
+      "parent": "assignment",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__work_log__review__681373AD",
+      "child": "work_log",
+      "child_column": "reviewer_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": true
+    },
+    {
+      "name": "FK__worker__agency_i__160F4887",
+      "child": "worker",
+      "child_column": "agency_id",
+      "parent": "agency",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__worker__user_id__17036CC0",
+      "child": "worker",
+      "child_column": "user_id",
+      "parent": "app_user",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__worker_ar__worke__2BFE89A6",
+      "child": "worker_area",
+      "child_column": "worker_id",
+      "parent": "worker",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__worker_ar__commu__2CF2ADDF",
+      "child": "worker_area",
+      "child_column": "community_id",
+      "parent": "community",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__worker_sk__worke__282DF8C2",
+      "child": "worker_skill",
+      "child_column": "worker_id",
+      "parent": "worker",
+      "parent_column": "id",
+      "is_nullable": false
+    },
+    {
+      "name": "FK__worker_sk__item___29221CFB",
+      "child": "worker_skill",
+      "child_column": "item_id",
+      "parent": "service_item",
+      "parent_column": "id",
+      "is_nullable": false
+    }
+  ],
+  "checks": [
+    {
+      "table_name": "app_user",
+      "name": "CK__app_user__failed__6477ECF3",
+      "definition": "([failed_attempts]>=(0))"
+    },
+    {
+      "table_name": "app_user",
+      "name": "CK__app_user__role__5EBF139D",
+      "definition": "([role]='civil' OR [role]='street' OR [role]='agency' OR [role]='worker' OR [role]='elderly' OR [role]='family' OR [role]='community' OR [role]='admin')"
+    },
+    {
+      "table_name": "area",
+      "name": "CK__area__4CA06362",
+      "definition": "([kind]='district' AND [parent_id] IS NULL OR [kind]='street' AND [parent_id] IS NOT NULL)"
+    },
+    {
+      "table_name": "area",
+      "name": "CK__area__kind__4AB81AF0",
+      "definition": "([kind]='street' OR [kind]='district')"
+    },
+    {
+      "table_name": "assessment",
+      "name": "CK__assessmen__abili__7C4F7684",
+      "definition": "([ability_level]>=(0) AND [ability_level]<=(3))"
+    },
+    {
+      "table_name": "assessment",
+      "name": "CK__assessmen__scale__7B5B524B",
+      "definition": "([scale]='MMSE' OR [scale]='ADL')"
+    },
+    {
+      "table_name": "assessment",
+      "name": "CK__assessment__7E37BEF6",
+      "definition": "([valid_until]>=[assessed_on])"
+    },
+    {
+      "table_name": "assessment",
+      "name": "CK__assessment__7F2BE32F",
+      "definition": "([scale]='ADL' AND ([score]>=(0) AND [score]<=(100)) OR [scale]='MMSE' AND ([score]>=(0) AND [score]<=(30)))"
+    },
+    {
+      "table_name": "assignment",
+      "name": "CK__assignmen__statu__5CA1C101",
+      "definition": "([status]='terminated' OR [status]='invalid' OR [status]='reassigned' OR [status]='timeout' OR [status]='rejected' OR [status]='completed' OR [status]='accepted' OR [status]='offered')"
+    },
+    {
+      "table_name": "care_plan",
+      "name": "CK__care_plan__3493CFA7",
+      "definition": "([ends_on]>=[starts_on])"
+    },
+    {
+      "table_name": "care_plan",
+      "name": "CK__care_plan__statu__339FAB6E",
+      "definition": "([status]='ended' OR [status]='paused' OR [status]='active' OR [status]='draft')"
+    },
+    {
+      "table_name": "certificate",
+      "name": "CK__certifica__level__245D67DE",
+      "definition": "([level]>=(1) AND [level]<=(3))"
+    },
+    {
+      "table_name": "certificate",
+      "name": "CK__certificate__25518C17",
+      "definition": "([valid_until]>=[issued_on])"
+    },
+    {
+      "table_name": "claim_item",
+      "name": "CK__claim_ite__amoun__3B0BC30C",
+      "definition": "([amount]>=(0))"
+    },
+    {
+      "table_name": "claim_review",
+      "name": "CK__claim_rev__decis__40C49C62",
+      "definition": "([decision]='reject' OR [decision]='return' OR [decision]='approve')"
+    },
+    {
+      "table_name": "claim_review",
+      "name": "CK__claim_rev__stage__3EDC53F0",
+      "definition": "([stage]='civil' OR [stage]='street')"
+    },
+    {
+      "table_name": "community",
+      "name": "CK__community__check__5629CD9C",
+      "definition": "([checkin_radius_m]>(0))"
+    },
+    {
+      "table_name": "community",
+      "name": "CK__community__latit__52593CB8",
+      "definition": "([latitude]>=(-90) AND [latitude]<=(90))"
+    },
+    {
+      "table_name": "community",
+      "name": "CK__community__longi__5165187F",
+      "definition": "([longitude]>=(-180) AND [longitude]<=(180))"
+    },
+    {
+      "table_name": "community",
+      "name": "CK__community__radiu__5441852A",
+      "definition": "([radius_m]>(0))"
+    },
+    {
+      "table_name": "contact",
+      "name": "CK__contact__76969D2E",
+      "definition": "([authorized_until] IS NULL OR [authorized_until]>[authorized_from])"
+    },
+    {
+      "table_name": "device",
+      "name": "CK__device__status__74794A92",
+      "definition": "([status]='inactive' OR [status]='fault' OR [status]='offline' OR [status]='online')"
+    },
+    {
+      "table_name": "device_binding",
+      "name": "CK__device_binding__7A3223E8",
+      "definition": "([unbound_at] IS NULL OR [unbound_at]>[bound_at])"
+    },
+    {
+      "table_name": "elderly",
+      "name": "CK__elderly__latitud__6A30C649",
+      "definition": "([latitude]>=(-90) AND [latitude]<=(90))"
+    },
+    {
+      "table_name": "elderly",
+      "name": "CK__elderly__longitu__693CA210",
+      "definition": "([longitude]>=(-180) AND [longitude]<=(180))"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__14E61A24",
+      "definition": "([arrival_minutes]>=[response_minutes])"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__15DA3E5D",
+      "definition": "([responded_at] IS NULL OR [responded_at]>=[occurred_at])"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__16CE6296",
+      "definition": "([arrived_at] IS NULL OR [responded_at] IS NOT NULL AND [arrived_at]>=[responded_at])"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__17C286CF",
+      "definition": "([status]<>'closed' OR [result] IS NOT NULL AND [closed_at] IS NOT NULL)"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__arriv__11158940",
+      "definition": "([arrival_minutes]>(0))"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__level__0F2D40CE",
+      "definition": "([level]>=(1) AND [level]<=(3))"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__respo__10216507",
+      "definition": "([response_minutes]>(0))"
+    },
+    {
+      "table_name": "emergency",
+      "name": "CK__emergency__statu__13F1F5EB",
+      "definition": "([status]='closed' OR [status]='handling' OR [status]='open')"
+    },
+    {
+      "table_name": "metric_rule",
+      "name": "CK__metric_rule__7EF6D905",
+      "definition": "([upper_bound]>=[lower_bound])"
+    },
+    {
+      "table_name": "notification",
+      "name": "CK__notificat__attem__2057CCD0",
+      "definition": "([attempts]>=(0) AND [attempts]<=(3))"
+    },
+    {
+      "table_name": "notification",
+      "name": "CK__notificat__stage__1C873BEC",
+      "definition": "([stage]='arrival' OR [stage]='escalated' OR [stage]='created')"
+    },
+    {
+      "table_name": "notification",
+      "name": "CK__notificat__statu__1E6F845E",
+      "definition": "([status]='manual' OR [status]='failed' OR [status]='sent' OR [status]='pending')"
+    },
+    {
+      "table_name": "package_item",
+      "name": "CK__package_i__frequ__114A936A",
+      "definition": "([frequency]>(0))"
+    },
+    {
+      "table_name": "package_item",
+      "name": "CK__package_i__perio__123EB7A3",
+      "definition": "([period]='month' OR [period]='week')"
+    },
+    {
+      "table_name": "plan_item",
+      "name": "CK__plan_item__frequ__395884C4",
+      "definition": "([frequency]>(0))"
+    },
+    {
+      "table_name": "plan_item",
+      "name": "CK__plan_item__perio__3A4CA8FD",
+      "definition": "([period]='month' OR [period]='week')"
+    },
+    {
+      "table_name": "quality_check",
+      "name": "CK__quality_c__metho__477199F1",
+      "definition": "([method]=N'上门核查' OR [method]=N'电话回访')"
+    },
+    {
+      "table_name": "quality_check",
+      "name": "CK__quality_c__score__4865BE2A",
+      "definition": "([score]>=(1) AND [score]<=(5))"
+    },
+    {
+      "table_name": "quality_check",
+      "name": "CK__quality_c__statu__4C364F0E",
+      "definition": "([status]='resolved' OR [status]='review' OR [status]='open' OR [status]='clear')"
+    },
+    {
+      "table_name": "quality_check",
+      "name": "CK__quality_check__4F12BBB9",
+      "definition": "([order_id] IS NULL AND [worker_id] IS NOT NULL OR [order_id] IS NOT NULL AND [worker_id] IS NULL)"
+    },
+    {
+      "table_name": "quality_check",
+      "name": "CK__quality_check__5006DFF2",
+      "definition": "([status]='clear' OR [issue] IS NOT NULL AND [requirement] IS NOT NULL AND [due_on] IS NOT NULL)"
+    },
+    {
+      "table_name": "service_item",
+      "name": "CK__service_i__categ__02FC7413",
+      "definition": "([category]=N'康复护理' OR [category]=N'家政' OR [category]=N'陪诊' OR [category]=N'助浴' OR [category]=N'助餐')"
+    },
+    {
+      "table_name": "service_item",
+      "name": "CK__service_i__durat__05D8E0BE",
+      "definition": "([duration_minutes]>=(1) AND [duration_minutes]<=(720))"
+    },
+    {
+      "table_name": "service_item",
+      "name": "CK__service_i__price__04E4BC85",
+      "definition": "([price]>=(0))"
+    },
+    {
+      "table_name": "service_item",
+      "name": "CK__service_it__unit__03F0984C",
+      "definition": "([unit]='hour' OR [unit]='visit')"
+    },
+    {
+      "table_name": "service_item",
+      "name": "CK__service_item__07C12930",
+      "definition": "([certificate_type] IS NULL AND [certificate_level] IS NULL OR [certificate_type] IS NOT NULL AND ([certificate_level]>=(1) AND [certificate_level]<=(3)))"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__chann__503BEA1C",
+      "definition": "([channel]=N'社区代下单' OR [channel]=N'家属端' OR [channel]=N'电话')"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__durat__4B7734FF",
+      "definition": "([duration_minutes]>=(1) AND [duration_minutes]<=(720))"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__latit__4D5F7D71",
+      "definition": "([latitude]>=(-90) AND [latitude]<=(90))"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__longi__4C6B5938",
+      "definition": "([longitude]>=(-180) AND [longitude]<=(180))"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__price__4F47C5E3",
+      "definition": "([price_unit]='hour' OR [price_unit]='visit')"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__ratin__540C7B00",
+      "definition": "([rating]>=(1) AND [rating]<=(5))"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__settl__531856C7",
+      "definition": "([settlement]>=(0))"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__statu__5224328E",
+      "definition": "([status]='terminated' OR [status]='exception' OR [status]='cancelled' OR [status]='completed' OR [status]='confirming' OR [status]='serving' OR [status]='accepted' OR [status]='offered' OR [status]='pending' OR [status]='ineligible')"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_o__unit___4E53A1AA",
+      "definition": "([unit_price]>=(0))"
+    },
+    {
+      "table_name": "service_order",
+      "name": "CK__service_order__55009F39",
+      "definition": "(CONVERT([date],[scheduled_at])=CONVERT([date],dateadd(minute,[duration_minutes],[scheduled_at])))"
+    },
+    {
+      "table_name": "service_package",
+      "name": "CK__service_p__abili__0B91BA14",
+      "definition": "([ability_level]>=(0) AND [ability_level]<=(3))"
+    },
+    {
+      "table_name": "shift",
+      "name": "CK__shift__41EDCAC5",
+      "definition": "([ends_at]>[starts_at] AND CONVERT([date],[starts_at])=CONVERT([date],[ends_at]))"
+    },
+    {
+      "table_name": "shift",
+      "name": "CK__shift__42E1EEFE",
+      "definition": "([used_slots]>=(0) AND [used_slots]<=[capacity])"
+    },
+    {
+      "table_name": "shift",
+      "name": "CK__shift__capacity__3E1D39E1",
+      "definition": "([capacity]>(0))"
+    },
+    {
+      "table_name": "shift",
+      "name": "CK__shift__status__40F9A68C",
+      "definition": "([status]='closed' OR [status]='published' OR [status]='draft')"
+    },
+    {
+      "table_name": "subsidy_claim",
+      "name": "CK__subsidy_c__amoun__2F9A1060",
+      "definition": "([amount]>=(0))"
+    },
+    {
+      "table_name": "subsidy_claim",
+      "name": "CK__subsidy_c__month__2DB1C7EE",
+      "definition": "(datepart(day,[month])=(1))"
+    },
+    {
+      "table_name": "subsidy_claim",
+      "name": "CK__subsidy_c__statu__318258D2",
+      "definition": "([status]='paid' OR [status]='approved' OR [status]='rejected' OR [status]='returned' OR [status]='civil' OR [status]='street' OR [status]='draft')"
+    },
+    {
+      "table_name": "subsidy_policy",
+      "name": "CK__subsidy_p__abili__251C81ED",
+      "definition": "([ability_level]>=(0) AND [ability_level]<=(3))"
+    },
+    {
+      "table_name": "subsidy_policy",
+      "name": "CK__subsidy_po__rate__2704CA5F",
+      "definition": "([rate]>=(0))"
+    },
+    {
+      "table_name": "subsidy_policy",
+      "name": "CK__subsidy_policy__27F8EE98",
+      "definition": "([starts_on]<=[ends_on] AND datepart(day,[starts_on])=(1) AND [ends_on]=eomonth([ends_on]))"
+    },
+    {
+      "table_name": "vital",
+      "name": "CK__vital__confirmat__078C1F06",
+      "definition": "([confirmation]='false' OR [confirmation]='confirmed' OR [confirmation]='pending' OR [confirmation]='normal')"
+    },
+    {
+      "table_name": "work_log",
+      "name": "CK__work_log__690797E6",
+      "definition": "([checkout_at] IS NULL OR [checkout_at]>[checkin_at])"
+    },
+    {
+      "table_name": "work_log",
+      "name": "CK__work_log__latitu__6442E2C9",
+      "definition": "([latitude]>=(-90) AND [latitude]<=(90))"
+    },
+    {
+      "table_name": "work_log",
+      "name": "CK__work_log__longit__634EBE90",
+      "definition": "([longitude]>=(-180) AND [longitude]<=(180))"
+    },
+    {
+      "table_name": "work_log",
+      "name": "CK__work_log__review__671F4F74",
+      "definition": "([review_status]='rejected' OR [review_status]='approved' OR [review_status]='auto' OR [review_status]='pending')"
+    },
+    {
+      "table_name": "work_log",
+      "name": "CK__work_log__valid___65370702",
+      "definition": "([valid_hours]>(0))"
+    },
+    {
+      "table_name": "worker",
+      "name": "CK__worker__1F98B2C1",
+      "definition": "([available_until]>[available_from])"
+    },
+    {
+      "table_name": "worker",
+      "name": "CK__worker__points__1EA48E88",
+      "definition": "([points]>=(0))"
+    },
+    {
+      "table_name": "worker",
+      "name": "CK__worker__status__1AD3FDA4",
+      "definition": "([status]='left' OR [status]='leave' OR [status]='active')"
+    },
+    {
+      "table_name": "worker",
+      "name": "CK__worker__total_ho__1CBC4616",
+      "definition": "([total_hours]>=(0))"
+    }
+  ],
+  "environment": {
+    "version": "Microsoft SQL Server 2025 (RTM) - 17.0.1000.7 (X64) \n\tOct 21 2025 12:05:57 \n\tCopyright (C) 2025 Microsoft Corporation\n\tExpress Edition (64-bit) on Windows 10 Home China 10.0 <X64> (Build 26200: ) (Hypervisor)\n",
+    "edition": "Express Edition (64-bit)",
+    "product_version": "17.0.1000.7"
+  }
+}

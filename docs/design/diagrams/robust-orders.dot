@@ -1,0 +1,8 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=LR;
+    actor [shape=plaintext,label="参与角色\n老人 家属 社区\n护工"];
+    boundary [label="«boundary»\n订单与派单界面",fillcolor="#f1f7fb"];
+    control [label="«control»\n资格 资质 名额 状态校验",fillcolor="#fff9ef"];
+    entity [label="«entity»\n订单 派单 排班\n工时 准入依据",fillcolor="#f4f9f1"];
+    actor -> boundary -> control -> entity [dir=forward];}

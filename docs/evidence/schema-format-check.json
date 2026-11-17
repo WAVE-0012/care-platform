@@ -1,0 +1,7 @@
+{
+  "file": "sql/01_schema.sql",
+  "change": "whitespace only",
+  "sql_tokens_identical": true,
+  "source_lines": 455,
+  "sha256": "a1c9b4fd75f6096ceff44b21d02967b62f11cdd72b9707acc4d391c5e6df2cbe"
+}

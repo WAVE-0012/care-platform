@@ -1,0 +1,8 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=LR;
+    actor [shape=plaintext,label="参与角色\n社区管理员\n街道和民政监管"];
+    boundary [label="«boundary»\n申报审核与整改界面",fillcolor="#f1f7fb"];
+    control [label="«control»\n政策匹配 金额 审核顺序",fillcolor="#fff9ef"];
+    entity [label="«entity»\n政策 申报 明细 审核\n抽查 订单 工时",fillcolor="#f4f9f1"];
+    actor -> boundary -> control -> entity [dir=forward];}

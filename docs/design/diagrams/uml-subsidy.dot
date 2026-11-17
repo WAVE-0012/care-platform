@@ -1,0 +1,17 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=TB; elderly [shape=record,label="{老人档案\nelderly|PK id\lFK community_id\lFK user_id\l}",fontsize=12];
+service_order [shape=record,label="{服务订单\nservice_order|PK id\lFK elderly_id\lFK item_id\lFK community_id\l}",fontsize=12];
+subsidy_policy [shape=record,label="{补贴政策\nsubsidy_policy|PK id\lFK district_id\lFK item_id\l}",fontsize=12];
+subsidy_claim [shape=record,label="{补贴申报\nsubsidy_claim|PK id\lFK elderly_id\lFK item_id\lFK community_id\l}",fontsize=12];
+claim_item [shape=record,label="{申报明细\nclaim_item|PK claim_id\lPK order_id\lFK policy_id\l}",fontsize=12];
+claim_review [shape=record,label="{审核记录\nclaim_review|PK id\lFK claim_id\lFK reviewer_id\l}",fontsize=12];
+quality_check [shape=record,label="{质量抽查\nquality_check|PK id\lFK order_id\lFK worker_id\lFK inspector_id\l}",fontsize=12];
+worker [shape=record,label="{护工档案\nworker|PK id\lFK agency_id\lFK user_id\l}",fontsize=12]; subsidy_claim -> claim_item [taillabel="1",headlabel="0..*",label="claim_id",labeldistance=1.7];
+service_order -> claim_item [taillabel="1",headlabel="0..1",label="order_id",labeldistance=1.7];
+subsidy_policy -> claim_item [taillabel="1",headlabel="0..*",label="policy_id",labeldistance=1.7];
+subsidy_claim -> claim_review [taillabel="1",headlabel="0..*",label="claim_id",labeldistance=1.7];
+service_order -> quality_check [taillabel="0..1",headlabel="0..*",label="order_id",labeldistance=1.7];
+worker -> quality_check [taillabel="0..1",headlabel="0..*",label="worker_id",labeldistance=1.7];
+elderly -> service_order [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+elderly -> subsidy_claim [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7]; }

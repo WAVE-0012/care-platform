@@ -1,0 +1,11 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=LR;
+    a0 [shape=plaintext,label="«actor»\n老人及家属"];
+a1 [shape=plaintext,label="«actor»\n社区管理员"];
+a2 [shape=plaintext,label="«actor»\n护工"];
+    subgraph cluster_system {label="服务下单与派单";color="#afc5d1";u0 [shape=ellipse,label="预约服务与取消",fillcolor="white"];
+u1 [shape=ellipse,label="推荐护工与改派",fillcolor="white"];
+u2 [shape=ellipse,label="接单与填写记录",fillcolor="white"];
+u3 [shape=ellipse,label="确认服务与结算",fillcolor="white"];}
+    a0 -> u0; a0 -> u3; a1 -> u0; a1 -> u1; a2 -> u2;}

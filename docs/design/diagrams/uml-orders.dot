@@ -1,0 +1,20 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=TB; elderly [shape=record,label="{老人档案\nelderly|PK id\lFK community_id\lFK user_id\l}",fontsize=12];
+service_item [shape=record,label="{服务项目\nservice_item|PK id\l}",fontsize=12];
+service_order [shape=record,label="{服务订单\nservice_order|PK id\lFK elderly_id\lFK item_id\lFK community_id\l}",fontsize=12];
+assignment [shape=record,label="{派单记录\nassignment|PK id\lFK order_id\lFK shift_id\lFK dispatcher_id\l}",fontsize=12];
+shift [shape=record,label="{护工排班\nshift|PK id\lFK worker_id\l}",fontsize=12];
+work_log [shape=record,label="{工时记录\nwork_log|PK id\lFK assignment_id\lFK reviewer_id\l}",fontsize=12];
+eligibility_snapshot [shape=record,label="{服务准入依据\neligibility_snapshot|PK order_id\lFK assessment_id\lFK plan_id\lFK checked_by\l}",fontsize=12];
+assessment [shape=record,label="{能力评估\nassessment|PK id\lFK elderly_id\lFK assessor_id\l}",fontsize=12];
+care_plan [shape=record,label="{照护计划\ncare_plan|PK id\lFK elderly_id\lFK package_id\lFK worker_id\l}",fontsize=12]; elderly -> assessment [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+service_order -> assignment [taillabel="1",headlabel="0..*",label="order_id",labeldistance=1.7];
+shift -> assignment [taillabel="1",headlabel="0..*",label="shift_id",labeldistance=1.7];
+elderly -> care_plan [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+service_order -> eligibility_snapshot [taillabel="1",headlabel="0..1",label="order_id",labeldistance=1.7];
+assessment -> eligibility_snapshot [taillabel="1",headlabel="0..*",label="assessment_id",labeldistance=1.7];
+care_plan -> eligibility_snapshot [taillabel="1",headlabel="0..*",label="plan_id",labeldistance=1.7];
+elderly -> service_order [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+service_item -> service_order [taillabel="1",headlabel="0..*",label="item_id",labeldistance=1.7];
+assignment -> work_log [taillabel="1",headlabel="0..1",label="assignment_id",labeldistance=1.7]; }

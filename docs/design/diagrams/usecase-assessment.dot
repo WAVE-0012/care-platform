@@ -1,0 +1,10 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=LR;
+    a0 [shape=plaintext,label="«actor»\n社区管理员"];
+a1 [shape=plaintext,label="«actor»\n老人及家属"];
+    subgraph cluster_system {label="老人档案与能力评估";color="#afc5d1";u0 [shape=ellipse,label="建档与联系人授权",fillcolor="white"];
+u1 [shape=ellipse,label="登记能力评估",fillcolor="white"];
+u2 [shape=ellipse,label="制定或暂停照护计划",fillcolor="white"];
+u3 [shape=ellipse,label="查询本人档案",fillcolor="white"];}
+    a0 -> u0; a0 -> u1; a0 -> u2; a1 -> u3;}

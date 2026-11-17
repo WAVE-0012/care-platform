@@ -1,0 +1,15 @@
+digraph G { graph [fontname="Microsoft YaHei",bgcolor="white",pad="0.25",nodesep="0.38",ranksep="0.65",splines=polyline];
+node [fontname="Microsoft YaHei",fontsize=13,shape=box,style="filled",fillcolor="#f8fbfc",color="#536e80",margin="0.16,0.10"];
+edge [fontname="Microsoft YaHei",fontsize=10,color="#758c98",arrowsize=0.55,dir=none]; rankdir=TB; elderly [shape=record,label="{老人档案\nelderly|PK id\lFK community_id\lFK user_id\l}",fontsize=12];
+device [shape=record,label="{监测设备\ndevice|PK id\l}",fontsize=12];
+device_binding [shape=record,label="{设备绑定\ndevice_binding|PK id\lFK device_id\lFK elderly_id\lFK operator_id\l}",fontsize=12];
+metric_rule [shape=record,label="{指标阈值\nmetric_rule|PK id\lFK community_id\l}",fontsize=12];
+vital [shape=record,label="{体征记录\nvital|PK id\lFK binding_id\lFK rule_id\l}",fontsize=12];
+emergency [shape=record,label="{应急事件\nemergency|PK id\lFK elderly_id\lFK community_id\lFK vital_id\l}",fontsize=12];
+notification [shape=record,label="{通知记录\nnotification|PK id\lFK event_id\l}",fontsize=12]; device -> device_binding [taillabel="1",headlabel="0..*",label="device_id",labeldistance=1.7];
+elderly -> device_binding [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+elderly -> emergency [taillabel="1",headlabel="0..*",label="elderly_id",labeldistance=1.7];
+vital -> emergency [taillabel="0..1",headlabel="0..1",label="vital_id",labeldistance=1.7];
+emergency -> notification [taillabel="1",headlabel="0..*",label="event_id",labeldistance=1.7];
+device_binding -> vital [taillabel="1",headlabel="0..*",label="binding_id",labeldistance=1.7];
+metric_rule -> vital [taillabel="1",headlabel="0..*",label="rule_id",labeldistance=1.7]; }
