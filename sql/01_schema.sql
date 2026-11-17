@@ -104,7 +104,7 @@ CREATE TABLE service_item (
     subsidized bit NOT NULL DEFAULT 1,
     certificate_type nvarchar(40) NULL,
     certificate_level tinyint NULL,
-    CONSTRAINT CK_service_item_certificate CHECK (
+    CONSTRAINT CK_service_item_certificate_pair CHECK (
         (certificate_type IS NULL AND certificate_level IS NULL)
         OR (certificate_type IS NOT NULL AND certificate_level IS NOT NULL AND certificate_level BETWEEN 1 AND 3)
     )

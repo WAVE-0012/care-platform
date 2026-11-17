@@ -203,14 +203,32 @@ def confirm(db, user, order_id, data):
 
 def feedback(db, user, order_id, data):
     require_role(user, "elderly", "family")
+    db.one("SELECT id FROM service_order WITH(UPDLOCK,HOLDLOCK) WHERE id=?", order_id)
     order = check_order(db, user, order_id)
     if order["status"] != "completed":
         raise BusinessError("完成服务后才能评价或投诉")
+
+    def text_value(key):
+        # 现有表单未回填旧文本：空白表示本次不修改，显式null才清空。
+        if key not in data:
+            return order[key]
+        if data[key] is None:
+            return None
+        value = data[key].strip()
+        return value if value else order[key]
+
+    rating = data.get("rating", order["rating"])
+    if rating == "":
+        rating = order["rating"]
+    content = text_value("feedback")
+    complaint = text_value("complaint")
+    result = order["complaint_result"] if complaint == order["complaint"] else None
     db.execute(
-        "UPDATE service_order SET rating=?,feedback=?,complaint=? WHERE id=?",
-        data.get("rating"),
-        data.get("feedback"),
-        data.get("complaint") or None,
+        "UPDATE service_order SET rating=?,feedback=?,complaint=?,complaint_result=? WHERE id=?",
+        rating,
+        content,
+        complaint,
+        result,
         order_id,
     )
     return {"id": order_id}
@@ -233,7 +251,15 @@ def resolve(db, user, order_id, data):
     elif action == "exception" and order["status"] in ["serving", "confirming"]:
         db.execute("UPDATE service_order SET status='exception' WHERE id=?", order_id)
     elif action == "resume" and order["status"] == "exception":
-        db.execute("UPDATE service_order SET status='confirming' WHERE id=?", order_id)
+        log = db.one(
+            "SELECT l.checkout_at FROM work_log l JOIN assignment a ON a.id=l.assignment_id "
+            "WHERE a.order_id=? AND a.is_current=1",
+            order_id,
+        )
+        if log is None:
+            raise BusinessError("缺少服务工时记录，请先核实后再恢复")
+        state = "serving" if log["checkout_at"] is None else "confirming"
+        db.execute("UPDATE service_order SET status=? WHERE id=?", state, order_id)
     elif action == "terminate" and order["status"] == "exception":
         db.execute(
             "UPDATE assignment SET status='terminated',reason=? WHERE order_id=? AND is_current=1",

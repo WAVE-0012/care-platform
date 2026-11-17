@@ -23,7 +23,7 @@
     },
     {
       "name": "audit_log",
-      "rows": 147
+      "rows": 167
     },
     {
       "name": "care_plan",
@@ -137,7 +137,7 @@
   "objects": [
     {
       "type_desc": "CHECK_CONSTRAINT",
-      "count": 82
+      "count": 83
     },
     {
       "type_desc": "DEFAULT_CONSTRAINT",
@@ -165,7 +165,7 @@
     },
     {
       "type_desc": "SQL_TRIGGER",
-      "count": 15
+      "count": 16
     },
     {
       "type_desc": "UNIQUE_CONSTRAINT",

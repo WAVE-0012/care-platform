@@ -234,7 +234,10 @@ def test_settlement_and_idempotence(db):
 
 def test_missing_confirmation_blocks_completion(db):
     order, assignment, _ = completed_order(db)
-    db.execute("UPDATE assignment SET confirmed_at=NULL WHERE id=?", assignment)
+    db.execute(
+        "UPDATE assignment SET confirmed_by=NULL,confirmed_at=NULL WHERE id=?",
+        assignment,
+    )
     with pytest.raises(pyodbc.Error, match="齐全"):
         db.call("sp_finish_order", order)
 

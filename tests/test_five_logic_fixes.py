@@ -145,6 +145,8 @@ def test_database_rejects_duplicate_collection_with_another_rule(db):
     original = health.upload(db, actor(db), [record])["ids"][0]
     binding = db.scalar("SELECT binding_id FROM vital WHERE id=?", original)
     another_rule = db.scalar("SELECT id FROM metric_rule WHERE community_id=2 AND metric='pulse'")
+    # F13 在正常路径拒绝跨社区阈值；这里临时关闭，专门验证采集身份触发器。
+    db.execute("DISABLE TRIGGER dbo.tr_vital_threshold ON dbo.vital")
     with pytest.raises(pyodbc.Error, match="51123"):
         db.insert(
             "INSERT vital(binding_id,rule_id,collected_at,value) VALUES(?,?,?,?)",
@@ -156,6 +158,7 @@ def test_database_rejects_duplicates_within_one_insert(db):
     record = pulse_record()
     collected = datetime.fromisoformat(record["collected_at"])
     rules = [db.scalar("SELECT id FROM metric_rule WHERE community_id=? AND metric='pulse'", c) for c in (1, 2)]
+    db.execute("DISABLE TRIGGER dbo.tr_vital_threshold ON dbo.vital")
     with pytest.raises(pyodbc.Error, match="51123"):
         db.execute(
             "INSERT vital(binding_id,rule_id,collected_at,value) VALUES(1,?,?,80),(1,?,?,80)",
@@ -288,6 +291,7 @@ def test_upgrade_rejects_invalid_existing_certificate_pair(db):
 
 def test_upgrade_rejects_existing_cross_rule_duplicates(db):
     db.execute("DISABLE TRIGGER dbo.tr_vital_identity ON dbo.vital")
+    db.execute("DISABLE TRIGGER dbo.tr_vital_threshold ON dbo.vital")
     rule1 = db.scalar("SELECT id FROM metric_rule WHERE community_id=1 AND metric='pulse'")
     rule2 = db.scalar("SELECT id FROM metric_rule WHERE community_id=2 AND metric='pulse'")
     collected = datetime.now().replace(microsecond=0) - timedelta(minutes=3)

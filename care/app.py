@@ -92,9 +92,9 @@ def create_app():
     @app.errorhandler(pyodbc.Error)
     def database_error(error):
         message = str(error)
-        business = re.search(r"\[SQL Server\](.*?)(?:\s*\(51\d{3}\))", message)
+        business = re.search(r"\[SQL Server\](.*?)(?:\s*\((51\d{3})\))", message)
         if business:
-            return jsonify(error=business.group(1)), 409
+            return jsonify(error=business.group(1)), 403 if business.group(2) == "51025" else 409
         if "2601" in message or "2627" in message:
             return jsonify(error="这条记录已经存在，请检查唯一编号或重复提交"), 409
         if "547" in message:

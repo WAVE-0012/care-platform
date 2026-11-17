@@ -61,7 +61,11 @@ def listing(db, user, kind, page=1, keyword=""):
             ]
         elif user["role"] != "admin":
             scope, values = community_scope(user, "x")
-            predicate = f"({predicate} OR o.target_worker IN(SELECT wa.worker_id FROM worker_area wa JOIN (SELECT id community_id FROM community) x ON x.community_id=wa.community_id WHERE {scope}))"
+            predicate = (
+                f"((o.order_id IS NOT NULL AND {predicate}) OR "
+                f"(o.order_id IS NULL AND o.target_worker IN(SELECT wa.worker_id FROM worker_area wa "
+                f"JOIN (SELECT id community_id FROM community) x ON x.community_id=wa.community_id WHERE {scope})))"
+            )
             params += values
         search = "worker_name"
     elif kind == "notifications":

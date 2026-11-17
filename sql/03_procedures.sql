@@ -86,9 +86,11 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
         UPDATE p SET status='paused' FROM care_plan p
-        OUTER APPLY(SELECT TOP 1 a.valid_until FROM assessment a WHERE a.elderly_id=p.elderly_id
+        JOIN service_package k ON k.id=p.package_id
+        OUTER APPLY(SELECT TOP 1 a.valid_until,a.ability_level FROM assessment a WHERE a.elderly_id=p.elderly_id
                     AND a.assessed_on<=CAST(@now AS date) ORDER BY a.assessed_on DESC) a
-        WHERE p.status='active' AND (a.valid_until IS NULL OR a.valid_until<CAST(@now AS date));
+        WHERE p.status='active' AND (a.valid_until IS NULL OR a.valid_until<CAST(@now AS date)
+                                     OR a.ability_level<>k.ability_level);
         DECLARE @plans int=@@ROWCOUNT;
         UPDATE a SET status=CASE WHEN DATEADD(minute,15,a.assigned_at)<=@now AND a.status='offered' THEN 'timeout' ELSE 'invalid' END,
                      is_current=0,reason=N'定时任务释放派单'
@@ -120,7 +122,8 @@ BEGIN
         IF @status IS NULL OR @status<>'confirming' THROW 51008,N'订单尚未进入待确认状态',1;
         SELECT @assignment=a.id,@hours=l.valid_hours FROM assignment a JOIN work_log l ON l.assignment_id=a.id
         WHERE a.order_id=@order_id AND a.is_current=1 AND NULLIF(LTRIM(RTRIM(a.service_record)),N'') IS NOT NULL
-          AND a.confirmed_at>=l.checkout_at AND l.valid_hours>0 AND l.review_status IN ('auto','approved')
+          AND a.confirmed_by IS NOT NULL AND a.confirmed_at>=l.checkout_at
+          AND l.valid_hours>0 AND l.review_status IN ('auto','approved')
           AND EXISTS(SELECT 1 FROM eligibility_snapshot e WHERE e.order_id=@order_id);
         IF @hours IS NULL THROW 51009,N'服务记录、服务确认或有效工时尚未齐全',1;
         UPDATE service_order SET status='completed',completed_at=SYSDATETIME(),
@@ -214,8 +217,13 @@ BEGIN
         BEGIN TRANSACTION;
         DECLARE @community int,@claim int,@status varchar(12);
         SELECT @community=community_id FROM elderly WITH (UPDLOCK,HOLDLOCK) WHERE id=@elderly_id;
-        SELECT @claim=id,@status=status FROM subsidy_claim WITH (UPDLOCK,HOLDLOCK)
+        IF @community IS NULL THROW 51026,N'老人档案不存在',1;
+        SELECT @claim=id,@status=status,@community=community_id FROM subsidy_claim WITH(UPDLOCK,HOLDLOCK)
             WHERE elderly_id=@elderly_id AND item_id=@item_id AND month=@month;
+        -- 有申报时使用首次申报社区；无申报时使用老人当前社区。
+        IF NOT EXISTS(SELECT 1 FROM app_user WHERE id=@actor_id AND active=1 AND
+            (role='admin' OR (role='community' AND community_id=@community)))
+            THROW 51025,N'仅申报所属社区管理员或系统管理员可提交此申报',1;
         -- 非退回状态按幂等处理：重复提交返回原申报；已驳回须明确提示，不能假装成功。
         IF @claim IS NOT NULL AND @status<>'returned'
         BEGIN
@@ -276,6 +284,13 @@ BEGIN
             THROW 51018,N'审核角色或辖区不匹配',1;
         IF EXISTS(SELECT 1 FROM claim_review WHERE claim_id=@claim_id AND reviewer_id=@actor_id AND stage<>@status)
             THROW 51019,N'初审与终审人员须分离',1;
+        -- 用记录编号划分轮次，同秒退回、重交也不会误用上一轮初审。
+        DECLARE @last_return int;
+        SELECT @last_return=COALESCE(MAX(id),0) FROM claim_review
+            WHERE claim_id=@claim_id AND decision='return';
+        IF @status='civil' AND NOT EXISTS(SELECT 1 FROM claim_review
+            WHERE claim_id=@claim_id AND id>@last_return AND stage='street' AND decision='approve')
+            THROW 51024,N'本轮街道初审通过后才能终审',1;
         IF @decision NOT IN ('approve','return','reject') OR NULLIF(LTRIM(RTRIM(@note)),N'') IS NULL
             THROW 51020,N'请填写有效审核结论与意见',1;
         INSERT claim_review(claim_id,stage,reviewer_id,decision,note) VALUES(@claim_id,@status,@actor_id,@decision,@note);
