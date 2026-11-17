@@ -57,9 +57,7 @@ def checkin(db, user, order_id, data):
         assignment["worker_id"],
     )
     if db.scalar(
-        "SELECT COUNT(*) FROM work_log l JOIN assignment a ON a.id=l.assignment_id "
-        "JOIN shift s ON s.id=a.shift_id JOIN service_order o ON o.id=a.order_id "
-        "WHERE s.worker_id=? AND l.checkout_at IS NULL AND o.status NOT IN ('terminated','cancelled')",
+        "SELECT COUNT(*) FROM work_log l JOIN assignment a ON a.id=l.assignment_id JOIN shift s ON s.id=a.shift_id WHERE s.worker_id=? AND l.checkout_at IS NULL",
         assignment["worker_id"],
     ):
         raise BusinessError("上一项服务尚未签退")

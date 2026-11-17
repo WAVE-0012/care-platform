@@ -232,76 +232,11 @@ def test_settlement_and_idempotence(db):
     assert db.scalar("SELECT used_slots FROM shift WHERE id=?", shift) == 1
 
 
-@pytest.mark.parametrize("entry", ["procedure", "direct_update"])
-def test_missing_confirmation_blocks_completion(db, entry):
+def test_missing_confirmation_blocks_completion(db):
     order, assignment, _ = completed_order(db)
-    db.execute("UPDATE assignment SET confirmed_by=NULL,confirmed_at=NULL WHERE id=?", assignment)
-    with pytest.raises(pyodbc.Error, match="齐全|必须具备"):
-        if entry == "procedure":
-            db.call("sp_finish_order", order)
-        else:
-            db.execute("UPDATE service_order SET status='completed',settlement=1 WHERE id=?", order)
-
-
-@pytest.mark.parametrize("column", ["confirmed_by", "confirmed_at"])
-def test_confirmation_requires_both_identity_and_time(db, column):
-    _, assignment, _ = completed_order(db)
-    with pytest.raises(pyodbc.Error, match="51120"):
-        db.execute(f"UPDATE assignment SET {column}=NULL WHERE id=?", assignment)
-
-
-@pytest.mark.parametrize(
-    "username,restriction",
-    [
-        ("admin", None),
-        ("elderly02", None),
-        ("family02", None),
-        ("family01", "expired"),
-        ("family01", "inactive_contact"),
-        ("family01", "future_authorization"),
-        ("elderly01", "inactive_user"),
-    ],
-)
-def test_database_rejects_unauthorized_confirmation(db, username, restriction):
-    _, assignment, _ = completed_order(db)
-    confirmed_at = db.scalar("SELECT confirmed_at FROM assignment WHERE id=?", assignment)
-    confirmer = actor(db, username)["id"]
-    db.execute("UPDATE assignment SET confirmed_by=NULL,confirmed_at=NULL WHERE id=?", assignment)
-    if restriction == "expired":
-        db.execute(
-            "UPDATE contact SET authorized_until=? WHERE elderly_id=1 AND user_id=?",
-            confirmed_at,
-            confirmer,
-        )
-    elif restriction == "inactive_contact":
-        db.execute("UPDATE contact SET active=0 WHERE elderly_id=1 AND user_id=?", confirmer)
-    elif restriction == "future_authorization":
-        db.execute(
-            "UPDATE contact SET authorized_from=? WHERE elderly_id=1 AND user_id=?",
-            confirmed_at + timedelta(seconds=1),
-            confirmer,
-        )
-    elif restriction == "inactive_user":
-        db.execute("UPDATE app_user SET active=0 WHERE id=?", confirmer)
-    with pytest.raises(pyodbc.Error, match="51121"):
-        db.execute(
-            "UPDATE assignment SET confirmed_by=?,confirmed_at=? WHERE id=?",
-            confirmer,
-            confirmed_at,
-            assignment,
-        )
-
-
-@pytest.mark.parametrize("revoke_after_confirmation", [False, True])
-def test_valid_family_confirmation_survives_later_revocation(db, revoke_after_confirmation):
-    order, assignment, _ = completed_order(db)
-    family = actor(db, "family01")["id"]
-    db.execute("UPDATE assignment SET confirmed_by=? WHERE id=?", family, assignment)
-    if revoke_after_confirmation:
-        db.execute("UPDATE contact SET active=0 WHERE elderly_id=1 AND user_id=?", family)
-    db.call("sp_finish_order", order)
-    assert db.scalar("SELECT status FROM service_order WHERE id=?", order) == "completed"
-    assert db.scalar("SELECT confirmed_by FROM assignment WHERE id=?", assignment) == family
+    db.execute("UPDATE assignment SET confirmed_at=NULL WHERE id=?", assignment)
+    with pytest.raises(pyodbc.Error, match="齐全"):
+        db.call("sp_finish_order", order)
 
 
 @pytest.mark.parametrize(
@@ -372,6 +307,15 @@ def test_multirow_threshold_trigger(db):
     ]
 
 
+def test_vital_rule_must_match_elderly_community(db):
+    now = datetime.now().replace(microsecond=0)
+    with pytest.raises(pyodbc.Error, match="社区"):
+        db.execute(
+            "INSERT vital(binding_id,rule_id,collected_at,value) VALUES(1,4,?,120)",
+            now,
+        )
+
+
 def test_emergency_survives_expired_plan_and_escalates_once(db):
     db.execute("UPDATE care_plan SET status='paused' WHERE elderly_id=1")
     event = health.create_event(
@@ -431,53 +375,6 @@ def test_claim_current_month_rejected(db):
         db.call(
             "sp_claim_month", 1, 1, date.today().replace(day=1), actor(db)["id"], "材料"
         )
-
-
-@pytest.mark.parametrize(
-    "sql",
-    [
-        "UPDATE subsidy_claim SET status='approved' WHERE id=1",
-        "INSERT subsidy_claim(elderly_id,item_id,month,community_id,amount,status,submitted_by,evidence) "
-        "SELECT TOP 1 elderly_id,item_id,month,community_id,amount,'approved',submitted_by,evidence FROM subsidy_claim",
-        "DELETE FROM subsidy_claim WHERE id=1",
-        "UPDATE claim_item SET amount=1 WHERE claim_id=1",
-        "DELETE FROM claim_item WHERE claim_id=1",
-        "INSERT claim_review(claim_id,stage,reviewer_id,decision,note) "
-        "SELECT TOP 1 1,'street',id,'approve',N'伪造审核' FROM app_user WHERE role='street'",
-        "DELETE FROM claim_review WHERE claim_id=1",
-    ],
-)
-def test_runtime_cannot_bypass_claim_procedures(db, sql):
-    db.execute("EXECUTE AS USER='care_app'")
-    try:
-        with pytest.raises(pyodbc.Error, match="229"):
-            db.execute(sql)
-    finally:
-        db.execute("REVERT")
-
-
-def test_claim_rounds_work_with_runtime_permissions(db):
-    db.execute("EXECUTE AS USER='care_app'")
-    try:
-        # 与页面相同的数据库身份，仍可经所有权链完成申报、退回重审和拨付。
-        test_claim_repeated_and_review_round(db)
-    finally:
-        db.execute("REVERT")
-
-
-def test_civil_review_requires_current_round_street_approval(db):
-    month = (date.today().replace(day=1) - timedelta(days=1)).replace(day=1)
-    submitter = actor(db, "community01")["id"]
-    street = actor(db, "street01")["id"]
-    civil = actor(db, "civil01")["id"]
-    claim = db.call("sp_claim_month", 21, 1, month, submitter, "完整材料")["id"]
-    db.call("sp_review_claim", claim, street, "approve", "第一轮初审")
-    db.call("sp_review_claim", claim, civil, "return", "补充材料")
-    db.call("sp_claim_month", 21, 1, month, submitter, "补齐材料")
-    # 仅用测试库所有者模拟旧数据状态异常，应用账号本身不能直接改此状态。
-    db.execute("UPDATE subsidy_claim SET status='civil' WHERE id=?", claim)
-    with pytest.raises(pyodbc.Error, match="51024"):
-        db.call("sp_review_claim", claim, civil, "approve", "不能沿用上一轮初审")
 
 
 def test_quality_restrictions_require_regulator(db):

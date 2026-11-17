@@ -25,14 +25,9 @@ def verify():
         page.locator("#workspace").wait_for(state="visible")
         def navigate(name):
             page.locator(f"a[data-section={name}]").click()
-            page.wait_for_function(
-                "name => document.querySelector('#workspace').dataset.section === name",
-                arg=name,
-            )
+            page.wait_for_selector(f'#workspace[data-section="{name}"]')
 
-        page.wait_for_function(
-            "document.querySelector('#workspace').dataset.section === 'overview'"
-        )
+        page.wait_for_selector('#workspace[data-section="overview"]')
         for name in [
             "overview",
             "elders",

@@ -90,18 +90,6 @@ def check_elderly(db, user, elderly_id):
     return elderly
 
 
-def check_worker_area(db, user, worker_id):
-    """监管直接护工业务与列表一致：至少一个服务社区在辖区内。"""
-    require_role(user, "street", "civil")
-    predicate, params = community_scope(user)
-    if not db.scalar(
-        f"SELECT COUNT(*) FROM worker_area o WHERE o.worker_id=? AND {predicate}",
-        worker_id,
-        *params,
-    ):
-        raise PermissionError("该护工不在当前账号的管理范围内")
-
-
 def check_order(db, user, order_id):
     predicate, params = order_scope(user)
     order = db.one(

@@ -18,7 +18,13 @@ GRANT
 SELECT,
 INSERT,
 UPDATE,
-DELETE,EXECUTE ON SCHEMA::dbo TO care_runtime;
+EXECUTE ON SCHEMA::dbo TO care_runtime;
+
+-- 只保留“删除未使用班次”这一个删除入口；其它业务表的删除一律收回。
+REVOKE DELETE ON SCHEMA::dbo
+FROM care_runtime;
+
+GRANT DELETE ON OBJECT::shift TO care_runtime;
 
 REVOKE CONTROL ON SCHEMA::dbo
 FROM care_runtime;
@@ -30,9 +36,10 @@ DENY
 DELETE,
 UPDATE ON OBJECT::audit_log TO care_runtime;
 
--- 补贴写入仅经同属 dbo 的存储过程完成；所有权链允许过程内部的静态 SQL，
--- 应用账号不能直接新增、修改、删除申报、明细或伪造审核记录。
-DENY INSERT,UPDATE,DELETE ON OBJECT::dbo.subsidy_claim TO care_runtime;
-DENY INSERT,UPDATE,DELETE ON OBJECT::dbo.claim_item TO care_runtime;
-DENY INSERT,UPDATE,DELETE ON OBJECT::dbo.claim_review TO care_runtime;
+DENY
+DELETE,
+UPDATE ON OBJECT::claim_review TO care_runtime;
+
+-- 部署到独立 Windows 服务账号时，由管理员额外执行（本机课程环境用 Windows 管理员连接，不需要）：
+--   GRANT IMPERSONATE ON USER::care_app TO [服务账号];
 GO

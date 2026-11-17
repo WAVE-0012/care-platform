@@ -30,34 +30,16 @@ def initialize():
 def migrate(include_schema=False):
     connection = connect()
     try:
-        base = sorted((ROOT / "sql").glob("0[1-5]_*.sql"))
-        paths = [path for path in base if path.name.startswith("01_") and include_schema]
-        # 存量数据先校验；已有库不重新运行建表DDL。
-        paths += sorted((ROOT / "sql/migrations").glob("*.sql"))
-        paths += [path for path in base if not path.name.startswith("01_")]
-        for path in paths:
+        for path in sorted((ROOT / "sql").glob("0[1-5]_*.sql")):
+            if path.name.startswith("01_") and not include_schema:
+                continue
             for batch in re.split(
                 r"^GO\s*$", path.read_text(encoding="utf-8"), flags=re.M | re.I
             ):
                 if batch.strip():
-                    cursor = connection.execute(batch)
-                    try:
-                        # 预检先返回待处理记录再THROW，必须消费后续结果才能收到错误。
-                        while True:
-                            if cursor.description:
-                                columns = [column[0] for column in cursor.description]
-                                for row in cursor:
-                                    print(json.dumps(dict(zip(columns, row)), ensure_ascii=False, default=str))
-                            if not cursor.nextset():
-                                break
-                    finally:
-                        cursor.close()
-        connection.commit()
-        for path in paths:
-            print(path.relative_to(ROOT))
-    except Exception:
-        connection.rollback()
-        raise
+                    connection.execute(batch)
+            connection.commit()
+            print(path.name)
     finally:
         connection.close()
 

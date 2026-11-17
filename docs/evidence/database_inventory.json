@@ -23,7 +23,7 @@
     },
     {
       "name": "audit_log",
-      "rows": 146
+      "rows": 147
     },
     {
       "name": "care_plan",
@@ -75,7 +75,7 @@
     },
     {
       "name": "notification",
-      "rows": 60
+      "rows": 100
     },
     {
       "name": "package_item",
@@ -165,7 +165,7 @@
     },
     {
       "type_desc": "SQL_TRIGGER",
-      "count": 14
+      "count": 15
     },
     {
       "type_desc": "UNIQUE_CONSTRAINT",

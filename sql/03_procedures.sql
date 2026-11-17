@@ -28,6 +28,7 @@ CREATE OR ALTER PROCEDURE sp_publish_shift
 AS
 BEGIN
     SET NOCOUNT ON; SET XACT_ABORT ON;
+    IF @ends_at<=@starts_at THROW 51024,N'班次结束时间须晚于开始时间',1;
     BEGIN TRY
         BEGIN TRANSACTION;
         DECLARE @id int;
@@ -85,11 +86,9 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
         UPDATE p SET status='paused' FROM care_plan p
-        JOIN service_package k ON k.id=p.package_id
-        OUTER APPLY(SELECT TOP 1 a.valid_until,a.ability_level FROM assessment a WHERE a.elderly_id=p.elderly_id
+        OUTER APPLY(SELECT TOP 1 a.valid_until FROM assessment a WHERE a.elderly_id=p.elderly_id
                     AND a.assessed_on<=CAST(@now AS date) ORDER BY a.assessed_on DESC) a
-        WHERE p.status='active' AND (a.valid_until IS NULL OR a.valid_until<CAST(@now AS date)
-                                     OR a.ability_level<>k.ability_level);
+        WHERE p.status='active' AND (a.valid_until IS NULL OR a.valid_until<CAST(@now AS date));
         DECLARE @plans int=@@ROWCOUNT;
         UPDATE a SET status=CASE WHEN DATEADD(minute,15,a.assigned_at)<=@now AND a.status='offered' THEN 'timeout' ELSE 'invalid' END,
                      is_current=0,reason=N'定时任务释放派单'
@@ -109,7 +108,7 @@ BEGIN
     END CATCH
 END;
 GO
-CREATE OR ALTER PROCEDURE sp_finish_order @order_id int AS
+CREATE OR ALTER PROCEDURE sp_finish_order @order_id int,@actor_id int=NULL AS
 BEGIN
     SET NOCOUNT ON; SET XACT_ABORT ON;
     BEGIN TRY
@@ -121,15 +120,15 @@ BEGIN
         IF @status IS NULL OR @status<>'confirming' THROW 51008,N'订单尚未进入待确认状态',1;
         SELECT @assignment=a.id,@hours=l.valid_hours FROM assignment a JOIN work_log l ON l.assignment_id=a.id
         WHERE a.order_id=@order_id AND a.is_current=1 AND NULLIF(LTRIM(RTRIM(a.service_record)),N'') IS NOT NULL
-          AND a.confirmed_by IS NOT NULL AND a.confirmed_at>=l.checkout_at
-          AND l.valid_hours>0 AND l.review_status IN ('auto','approved')
+          AND a.confirmed_at>=l.checkout_at AND l.valid_hours>0 AND l.review_status IN ('auto','approved')
           AND EXISTS(SELECT 1 FROM eligibility_snapshot e WHERE e.order_id=@order_id);
         IF @hours IS NULL THROW 51009,N'服务记录、服务确认或有效工时尚未齐全',1;
         UPDATE service_order SET status='completed',completed_at=SYSDATETIME(),
             settlement=ROUND(@price*CASE WHEN @unit='visit' THEN 1 WHEN @hours<@minutes/60.0 THEN @hours ELSE @minutes/60.0 END,2)
         WHERE id=@order_id;
         UPDATE assignment SET status='completed' WHERE id=@assignment;
-        INSERT audit_log(entity,entity_id,action,detail) VALUES('order',@order_id,'complete',N'确认服务并结算');
+        INSERT audit_log(entity,entity_id,action,actor_id,detail)
+            VALUES('order',@order_id,'complete',@actor_id,N'确认服务并结算');
         COMMIT; SELECT @order_id id;
     END TRY
     BEGIN CATCH
@@ -141,15 +140,23 @@ CREATE OR ALTER PROCEDURE sp_review_hours
     @log_id int,@reviewer_id int,@hours decimal(8,2),@note nvarchar(500)
 AS
 BEGIN
-    SET NOCOUNT ON;
+    SET NOCOUNT ON; SET XACT_ABORT ON;
     IF @hours<=0 OR NULLIF(LTRIM(RTRIM(@note)),N'') IS NULL THROW 51010,N'复核需要正工时和核验说明',1;
-    IF NOT EXISTS(SELECT 1 FROM work_log l JOIN assignment a ON a.id=l.assignment_id JOIN shift s ON s.id=a.shift_id
-        JOIN worker w ON w.id=s.worker_id JOIN app_user u ON u.id=@reviewer_id
-        WHERE l.id=@log_id AND l.review_status='pending' AND l.checkout_at IS NOT NULL AND u.id<>w.user_id
-          AND (u.role='admin' OR (u.role='agency' AND u.agency_id=w.agency_id))
-          AND @hours<=DATEDIFF(second,l.checkin_at,l.checkout_at)/3600.0+0.01)
-        THROW 51011,N'复核人、工时或记录状态不符合要求',1;
-    UPDATE work_log SET valid_hours=@hours,review_status='approved',reviewer_id=@reviewer_id,review_note=@note WHERE id=@log_id;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        IF NOT EXISTS(SELECT 1 FROM work_log l WITH (UPDLOCK,HOLDLOCK)
+            JOIN assignment a ON a.id=l.assignment_id JOIN shift s ON s.id=a.shift_id
+            JOIN worker w ON w.id=s.worker_id JOIN app_user u ON u.id=@reviewer_id
+            WHERE l.id=@log_id AND l.review_status='pending' AND l.checkout_at IS NOT NULL AND u.id<>w.user_id
+              AND (u.role='admin' OR (u.role='agency' AND u.agency_id=w.agency_id))
+              AND @hours<=DATEDIFF(second,l.checkin_at,l.checkout_at)/3600.0+0.01)
+            THROW 51011,N'复核人、工时或记录状态不符合要求',1;
+        UPDATE work_log SET valid_hours=@hours,review_status='approved',reviewer_id=@reviewer_id,review_note=@note WHERE id=@log_id;
+        COMMIT;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT>0 ROLLBACK; THROW;
+    END CATCH
 END;
 GO
 CREATE OR ALTER PROCEDURE sp_bind_device
@@ -207,21 +214,19 @@ BEGIN
         BEGIN TRANSACTION;
         DECLARE @community int,@claim int,@status varchar(12);
         SELECT @community=community_id FROM elderly WITH (UPDLOCK,HOLDLOCK) WHERE id=@elderly_id;
-        IF @community IS NULL THROW 51026,N'老人档案不存在',1;
-        SELECT @claim=id,@status=status,@community=community_id FROM subsidy_claim WITH(UPDLOCK,HOLDLOCK)
+        SELECT @claim=id,@status=status FROM subsidy_claim WITH (UPDLOCK,HOLDLOCK)
             WHERE elderly_id=@elderly_id AND item_id=@item_id AND month=@month;
-        -- 有申报时使用首次申报社区；无申报时使用老人当前社区。
-        IF NOT EXISTS(SELECT 1 FROM app_user WHERE id=@actor_id AND active=1 AND
-            (role='admin' OR (role='community' AND community_id=@community)))
-            THROW 51025,N'仅申报所属社区管理员或系统管理员可提交此申报',1;
-        IF @claim IS NOT NULL
+        -- 非退回状态按幂等处理：重复提交返回原申报；已驳回须明确提示，不能假装成功。
+        IF @claim IS NOT NULL AND @status<>'returned'
         BEGIN
-            IF @status='returned' UPDATE subsidy_claim SET status='street',evidence=@evidence,submitted_by=@actor_id,submitted_at=SYSDATETIME() WHERE id=@claim;
+            IF @status='rejected' THROW 51017,N'该月申报已被驳回，请核对材料后重新办理',1;
             COMMIT; SELECT @claim id; RETURN;
         END;
         IF EXISTS(SELECT 1 FROM service_order WHERE elderly_id=@elderly_id AND item_id=@item_id
             AND scheduled_at>=@month AND scheduled_at<DATEADD(month,1,@month) AND status NOT IN ('completed','cancelled','terminated'))
             THROW 51015,N'该月仍有未结束订单，请先完成服务处理',1;
+        -- 退回重提：先释放旧明细，再按当前可申报订单重算，避免沿用旧金额。
+        IF @claim IS NOT NULL DELETE claim_item WHERE claim_id=@claim;
         DECLARE @items TABLE(order_id int,policy_id int,amount decimal(12,2));
         INSERT @items
         SELECT v.order_id,p.id,ROUND(CASE WHEN p.rate*q.quantity<v.settlement THEN p.rate*q.quantity ELSE v.settlement END,2)
@@ -233,9 +238,18 @@ BEGIN
                                 THEN v.valid_hours ELSE v.duration_minutes/60.0 END quantity) q
         WHERE v.elderly_id=@elderly_id AND v.item_id=@item_id AND v.scheduled_at>=@month AND v.scheduled_at<DATEADD(month,1,@month);
         IF NOT EXISTS(SELECT 1 FROM @items) THROW 51016,N'该月没有符合政策的服务订单',1;
-        INSERT subsidy_claim(elderly_id,item_id,month,community_id,amount,submitted_by,evidence)
-            SELECT @elderly_id,@item_id,@month,@community,SUM(amount),@actor_id,@evidence FROM @items;
-        SET @claim=SCOPE_IDENTITY();
+        IF @claim IS NULL
+        BEGIN
+            INSERT subsidy_claim(elderly_id,item_id,month,community_id,amount,submitted_by,evidence)
+                SELECT @elderly_id,@item_id,@month,@community,SUM(amount),@actor_id,@evidence FROM @items;
+            SET @claim=SCOPE_IDENTITY();
+        END
+        ELSE
+        BEGIN
+            UPDATE subsidy_claim SET status='street',amount=(SELECT SUM(amount) FROM @items),
+                evidence=@evidence,submitted_by=@actor_id,submitted_at=SYSDATETIME()
+            WHERE id=@claim;
+        END
         INSERT claim_item SELECT @claim,order_id,policy_id,amount FROM @items;
         INSERT audit_log(entity,entity_id,action,actor_id,detail) VALUES('claim',@claim,'submit',@actor_id,@evidence);
         COMMIT; SELECT @claim id;
@@ -262,13 +276,6 @@ BEGIN
             THROW 51018,N'审核角色或辖区不匹配',1;
         IF EXISTS(SELECT 1 FROM claim_review WHERE claim_id=@claim_id AND reviewer_id=@actor_id AND stage<>@status)
             THROW 51019,N'初审与终审人员须分离',1;
-        -- 用记录编号划分轮次，同秒退回、重交也不会误用上一轮初审。
-        DECLARE @last_return int;
-        SELECT @last_return=COALESCE(MAX(id),0) FROM claim_review
-            WHERE claim_id=@claim_id AND decision='return';
-        IF @status='civil' AND NOT EXISTS(SELECT 1 FROM claim_review
-            WHERE claim_id=@claim_id AND id>@last_return AND stage='street' AND decision='approve')
-            THROW 51024,N'本轮街道初审通过后才能终审',1;
         IF @decision NOT IN ('approve','return','reject') OR NULLIF(LTRIM(RTRIM(@note)),N'') IS NULL
             THROW 51020,N'请填写有效审核结论与意见',1;
         INSERT claim_review(claim_id,stage,reviewer_id,decision,note) VALUES(@claim_id,@status,@actor_id,@decision,@note);
@@ -290,9 +297,9 @@ BEGIN
         SELECT @status=status,@existing=payment_reference FROM subsidy_claim WITH (UPDLOCK,HOLDLOCK) WHERE id=@claim_id;
         IF @status='paid' AND @existing=@reference BEGIN COMMIT; SELECT @claim_id id; RETURN; END;
         IF @status IS NULL OR @status<>'approved' THROW 51021,N'只有终审通过的申报可以登记拨付',1;
-        IF NULLIF(@reference,'') IS NULL THROW 51022,N'拨付凭证号不能为空',1;
+        IF NULLIF(LTRIM(RTRIM(@reference)),'') IS NULL THROW 51022,N'拨付凭证号不能为空',1;
         IF NOT EXISTS(SELECT 1 FROM app_user u JOIN subsidy_claim s ON s.id=@claim_id JOIN community c ON c.id=s.community_id
-            JOIN area a ON a.id=c.street_id WHERE u.id=@actor_id AND u.role='civil' AND u.area_id=a.parent_id)
+            JOIN area a ON a.id=c.street_id WHERE u.id=@actor_id AND u.active=1 AND u.role='civil' AND u.area_id=a.parent_id)
             THROW 51023,N'拨付人员须为辖区民政监管人员',1;
         UPDATE subsidy_claim SET status='paid',payment_reference=@reference,paid_by=@actor_id,paid_at=SYSDATETIME() WHERE id=@claim_id;
         INSERT audit_log(entity,entity_id,action,actor_id,detail) VALUES('claim',@claim_id,'pay',@actor_id,@reference);

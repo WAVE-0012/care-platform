@@ -92,9 +92,9 @@ def create_app():
     @app.errorhandler(pyodbc.Error)
     def database_error(error):
         message = str(error)
-        business = re.search(r"\[SQL Server\](.*?)(?:\s*\((51\d{3})\))", message)
+        business = re.search(r"\[SQL Server\](.*?)(?:\s*\(51\d{3}\))", message)
         if business:
-            return jsonify(error=business.group(1)), 403 if business.group(2) == "51025" else 409
+            return jsonify(error=business.group(1)), 409
         if "2601" in message or "2627" in message:
             return jsonify(error="这条记录已经存在，请检查唯一编号或重复提交"), 409
         if "547" in message:
@@ -305,7 +305,7 @@ def create_app():
         require_role(g.user, "admin", "community", "agency")
         with transaction() as db:
             check_order(db, g.user, order_id)
-            return jsonify(db.call("sp_finish_order", order_id))
+            return jsonify(db.call("sp_finish_order", order_id, g.user["id"]))
 
     @app.delete("/api/shifts/<int:shift_id>")
     def delete_shift(shift_id):

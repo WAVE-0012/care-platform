@@ -1,9 +1,15 @@
 本地实际版本记录
 
-以下为交付校核前已完成的提交；完整记录可在本机 project 中执行 git log 查看。
+以下为交付校核前已完成的提交；完整记录可在仓库执行 git log 查看。
 提交作者 Codex 表示工具实施记录，组员贡献在确定分工后另行填写。
 
 9ac6a01 | 2026-11-15T01:57:48+08:00 | Codex | Implement community care database and five service workflows
 d223357 | 2026-11-15T02:22:01+08:00 | Codex | Document verified database design and correct asynchronous page navigation
 
-2026-11-17 | 界面版，已提交 | 界面改版与操作留痕优化 | 深色顶栏、分组侧栏、KPI 横条、密集表格、登录插画；审计对象/操作中文化并过滤历史 tick；仅改前端与审计两处小改。详见 docs/management/界面改版与操作留痕说明_20261117.md
+2026-11-17 | 复核修复 | 已并入最终版 | 复核 10 个 SQL 文件；修复证书约束、触发器冻结清单、阈值社区校验、申报退回重算、权限删除面、start.ps1 与依赖版本；pytest 65 项通过。详见 docs/management/修复记录_20261117.md
+
+2026-11-17 | 界面改版 | 已并入最终版 | 前端去“AI 味”：深色顶栏、分组菜单、KPI 横条、统计表、密集列表；pytest 65 项通过，verify_ui 12 页通过。详见 docs/management/界面改版与操作留痕说明_20261117.md
+
+2026-11-17 | 审计噪声 | 已并入最终版 | 维护任务空转不再写 scheduler tick；操作留痕过滤历史 tick 行，改显中文 maintenance 摘要；verify_ui 改为选择器等待以绕过 CSP 的 eval 限制；pytest 65 项通过。详见 docs/management/审计噪声修复_20261117.md
+
+2026-11-17 | 最终版 | 已提交 | 数据库复核修复 + 界面改版 + 审计噪声合并；33 表 / 276 列 / 17 视图 / 11 过程 / 15 触发器 / 3 函数；pytest 65 项通过。组内另一条五项逻辑修复移至 docs/reference/组内五项逻辑修复_未并入/，未参与本版测试。详见 docs/management/最终版变更总览_20261117.md

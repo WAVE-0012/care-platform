@@ -61,11 +61,7 @@ def listing(db, user, kind, page=1, keyword=""):
             ]
         elif user["role"] != "admin":
             scope, values = community_scope(user, "x")
-            predicate = (
-                f"((o.order_id IS NOT NULL AND {predicate}) OR "
-                f"(o.order_id IS NULL AND o.target_worker IN(SELECT wa.worker_id FROM worker_area wa "
-                f"JOIN (SELECT id community_id FROM community) x ON x.community_id=wa.community_id WHERE {scope})))"
-            )
+            predicate = f"({predicate} OR o.target_worker IN(SELECT wa.worker_id FROM worker_area wa JOIN (SELECT id community_id FROM community) x ON x.community_id=wa.community_id WHERE {scope}))"
             params += values
         search = "worker_name"
     elif kind == "notifications":
@@ -75,7 +71,8 @@ def listing(db, user, kind, page=1, keyword=""):
     elif kind == "audit":
         require_role(user, "admin", "community", "agency", "street", "civil")
         source = "SELECT a.*,u.display_name actor_name FROM audit_log a LEFT JOIN app_user u ON u.id=a.actor_id"
-        # 维护任务空转不写业务可见审计，避免“操作留痕”被系统轮询占满。
+        # 维护任务的每分钟空转不是业务操作，不占用“操作留痕”列表；
+        # 真正发生到期/升级/通知时写入 action='maintenance'，仍会显示。
         visible = "NOT (o.entity='scheduler' AND o.action='tick')"
         predicate, params = (
             (visible, []) if user["role"] == "admin"

@@ -1,18 +1,18 @@
 from care.security import (
     BusinessError,
+    check_community,
+    check_elderly,
     check_order,
-    check_worker_area,
     require_role,
 )
 
 
 def claim(db, user, data):
     require_role(user, "admin", "community")
-    elderly_id = int(data["elderly_id"])
-    # 首次提交和历史申报重交的辖区在过程内分别判断，避免迁移后按当前社区误拒。
+    check_elderly(db, user, int(data["elderly_id"]))
     return db.call(
         "sp_claim_month",
-        elderly_id,
+        data["elderly_id"],
         data["item_id"],
         data["month"],
         user["id"],
@@ -41,7 +41,13 @@ def quality(db, user, data):
         if order["status"] != "completed":
             raise BusinessError("订单抽查应选择已完成服务")
     elif worker_id:
-        check_worker_area(db, user, int(worker_id))
+        areas = db.all(
+            "SELECT community_id FROM worker_area WHERE worker_id=?", worker_id
+        )
+        if not areas:
+            raise BusinessError("护工未配置服务社区")
+        for area in areas:
+            check_community(db, user, area["community_id"])
     else:
         raise BusinessError("请选择订单或护工作为抽查对象")
     issue = data.get("issue", "").strip() or None
@@ -79,7 +85,7 @@ def quality(db, user, data):
 
 def rectify(db, user, check_id, data):
     check = db.one(
-        "SELECT q.*,w.agency_id,COALESCE(q.worker_id,s.worker_id) target_worker FROM quality_check q WITH(UPDLOCK,HOLDLOCK) LEFT JOIN assignment a ON a.order_id=q.order_id AND a.is_current=1 LEFT JOIN shift s ON s.id=a.shift_id JOIN worker w ON w.id=COALESCE(q.worker_id,s.worker_id) WHERE q.id=?",
+        "SELECT q.*,w.agency_id,COALESCE(q.worker_id,s.worker_id) target_worker FROM quality_check q LEFT JOIN assignment a ON a.order_id=q.order_id AND a.is_current=1 LEFT JOIN shift s ON s.id=a.shift_id JOIN worker w ON w.id=COALESCE(q.worker_id,s.worker_id) WHERE q.id=?",
         check_id,
     )
     if check is None:
@@ -100,7 +106,11 @@ def rectify(db, user, check_id, data):
         if check["order_id"]:
             check_order(db, user, check["order_id"])
         else:
-            check_worker_area(db, user, check["target_worker"])
+            for area in db.all(
+                "SELECT community_id FROM worker_area WHERE worker_id=?",
+                check["target_worker"],
+            ):
+                check_community(db, user, area["community_id"])
         if check["status"] != "review":
             raise BusinessError("机构提交整改后才能复核")
         db.execute(

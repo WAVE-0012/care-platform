@@ -104,9 +104,10 @@ CREATE TABLE service_item (
     subsidized bit NOT NULL DEFAULT 1,
     certificate_type nvarchar(40) NULL,
     certificate_level tinyint NULL,
-    CONSTRAINT CK_service_item_certificate_pair CHECK (
-        (certificate_type IS NULL AND certificate_level IS NULL) OR
-        (certificate_type IS NOT NULL AND certificate_level IS NOT NULL AND certificate_level BETWEEN 1 AND 3))
+    CONSTRAINT CK_service_item_certificate CHECK (
+        (certificate_type IS NULL AND certificate_level IS NULL)
+        OR (certificate_type IS NOT NULL AND certificate_level IS NOT NULL AND certificate_level BETWEEN 1 AND 3)
+    )
 );
 
 CREATE TABLE service_package (
@@ -283,7 +284,8 @@ CREATE TABLE device_binding (
 CREATE UNIQUE INDEX UX_binding_current ON device_binding(device_id)
     WHERE unbound_at IS NULL;
 
--- 不同社区使用独立的示例阈值版本，已产生体征后保留该版本。
+-- 每个社区每种指标一条示例阈值；被体征引用后禁止修改或删除，保证历史判定可复核。
+-- 需要调整阈值时新增社区或指标版本属于后续扩展，当前版本不做多版本并存。
 CREATE TABLE metric_rule (
     id int IDENTITY PRIMARY KEY,
     community_id int NOT NULL REFERENCES community(id),
@@ -454,4 +456,9 @@ CREATE INDEX IX_vital_history ON vital(binding_id, collected_at)
     INCLUDE(rule_id, value, abnormal);
 
 CREATE INDEX IX_audit_entity ON audit_log(entity, entity_id, created_at);
+
+CREATE INDEX IX_assignment_shift ON assignment(shift_id, status)
+    INCLUDE(is_current);
+
+CREATE INDEX IX_order_elderly_item_date ON service_order(elderly_id, item_id, scheduled_at);
 GO

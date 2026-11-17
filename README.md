@@ -1,6 +1,6 @@
 # 社区居家养老智慧服务平台
 
-数据库系统课程设计。系统围绕老人档案、服务订单、护工排班、健康应急和补贴监管五条业务线实现业务闭环，使用 SQL Server、Python Flask 和原生 JavaScript。
+数据库系统课程设计。系统围绕老人档案、服务订单、护工排班、健康应急和补贴监管五条业务线实现业务闭环，使用 SQL Server、Python Flask 和原生 JavaScript。当前物理库为 33 表、17 视图、11 存储过程、15 触发器、3 函数；设计实体 37 个到 33 张表的映射见 [对象与口径映射](docs/design/对象与口径映射.md)。
 
 ## 本机运行
 
@@ -27,101 +27,21 @@
 
 ## 在另一台 Windows 电脑部署
 
-### 环境要求
-
-- **Python 3.11**（推荐 3.11.x）
-- **SQL Server Express 2019+**（实例名：`.\SQLEXPRESS`，Windows 身份验证）
-- **Microsoft ODBC Driver 18 for SQL Server**
-- 当前 Windows 用户需要有 SQL Server 建库和备份权限
-
-### 快速部署步骤
+使用 Python 3.11 及以上（本次在 3.11.9 虚拟环境与 3.14.0 全局环境验证）、SQL Server Express 及 Microsoft ODBC Driver 18 for SQL Server。requirements.txt 固定本次验证的依赖版本。SQL Server 使用 Windows 身份验证；初始化和备份脚本需要建库、备份权限。
 
 ```powershell
-# 1. 进入项目目录
-cd 项目路径
-
-# 2. 创建虚拟环境
 python -m venv .venv
-
-# 3. 安装依赖
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-
-# 4. （可选）配置数据库连接，默认为 .\SQLEXPRESS 和 CareHomeCourse2026
-# $env:CARE_SERVER = '.\SQLEXPRESS'
-# $env:CARE_DATABASE = 'CareHomeCourse2026'
-
-# 5. 初始化数据库并装载演示数据
+$env:CARE_SERVER = '.\SQLEXPRESS'
+$env:CARE_DATABASE = 'CareHomeCourse2026'
 .\.venv\Scripts\python.exe scripts/manage.py init
 .\.venv\Scripts\python.exe scripts/manage.py seed
-
-# 6. 启动服务
-.\start.ps1
-
-# 7. 浏览器访问 http://127.0.0.1:5000
-# 使用演示账号登录，所有账号密码统一为：Care2026!
-```
-
-### 命令说明
-
-- `init` - 创建新数据库和表结构（数据库已存在会报错）
-- `seed` - 向空库装载演示数据（约 50+ 条记录）
-- `migrate` - 更新已有数据库的视图、函数、存储过程、触发器
-- `.\start.ps1` - 启动 Flask 应用和后台维护进程，按 Ctrl+C 停止
-
-### 重要说明
-
-1. **密钥文件**：首次运行会在 `instance/keys.json` 生成会话签名、身份证加密和检索密钥。**迁移环境时必须将此文件与数据库一并迁移**，否则无法解密敏感数据。
-2. **数据预检**：`migrate` 先执行 `sql/migrations` 的存量预检和增量约束，再更新视图、函数、过程、触发器，全部成功后统一提交。预检发现不合法项目或重复体征时列出记录并回滚，不自动删除历史数据。
-3. **版本固定**：`requirements.txt` 固定本次验证的依赖版本，确保兼容性。
-4. **密钥和备份**：`instance/keys.json` 和数据库备份不进入 Git。
-
-### 常见问题
-
-**端口 5000 被占用**：修改 `run.py` 中的端口号
-
-**数据库连接失败**：
-- 确认 SQL Server 服务正在运行：`Get-Service | Where-Object {$_.Name -like "*SQL*"}`
-- 确认实例名称正确：`sqlcmd -L`
-- 确认当前 Windows 用户有 sysadmin 权限
-
-**ODBC Driver 找不到**：
-- 确认已安装 ODBC Driver 18：`Get-OdbcDriver | Where-Object {$_.Name -like "*SQL Server*"}`
-- 如安装了其他版本，修改 `care/config.py` 第 28 行的驱动名称
-
-**执行策略错误**：`Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-
-**重新初始化**：
-```powershell
-sqlcmd -S .\SQLEXPRESS -E -Q "DROP DATABASE CareHomeCourse2026"
-.\.venv\Scripts\python.exe scripts/manage.py init
-.\.venv\Scripts\python.exe scripts/manage.py seed
-```
-
-### 迁移到另一台电脑
-
-**源电脑备份**：
-```powershell
-# 备份数据库
-sqlcmd -S .\SQLEXPRESS -E -Q "BACKUP DATABASE CareHomeCourse2026 TO DISK='C:\backup\care.bak'"
-
-# 复制到目标电脑：
-# - 整个项目文件夹
-# - instance/keys.json（重要！）
-# - C:\backup\care.bak
-```
-
-**目标电脑恢复**：
-```powershell
-# 1. 完成环境准备和步骤 1-3
-# 2. 复制 keys.json 到 instance 目录
-# 3. 恢复数据库
-sqlcmd -S .\SQLEXPRESS -E -Q "RESTORE DATABASE CareHomeCourse2026 FROM DISK='C:\backup\care.bak' WITH REPLACE"
-# 4. 启动服务
 .\start.ps1
 ```
 
-详细部署指南请参阅：**`部署指南.md`**
+`init` 创建新库；已有数据库更新视图、函数、过程和触发器时使用 `migrate`。`seed` 只向空库写入合成数据。第一次运行会在 `instance/keys.json` 生成会话签名、身份证加密和检索密钥；更换环境时应与数据库一并迁移该文件。密钥和数据库备份不进入 Git。
+
+启动脚本会先确认 `.venv` 能导入 Flask 和 pyodbc，导入失败时自动回退到 PATH 中的 Python；如果两者都不可用，按上面的命令补装依赖。2026-11-17 的 17 组复核修复、界面改版和审计噪声修复见 [最终版变更总览](docs/management/最终版变更总览_20261117.md)，数据库细节见 [修复记录](docs/management/修复记录_20261117.md)。
 
 ## 操作顺序
 
@@ -152,7 +72,6 @@ sql/                    按依赖顺序执行的数据库脚本
   04_triggers.sql       15 个触发器
   05_security.sql       应用数据库身份及权限
   queries/              15 组业务查询，每组两种实现
-  migrations/           已有数据预检及幂等结构更新
 scripts/                建库、数据、维护、备份、实验脚本
 tests/                  API、事务、并发及查询等价性测试
 docs/design/            数据字典、关系模式、图的源文件和图片
@@ -173,10 +92,10 @@ python scripts/maintenance.py
 
 测试自动创建带时间戳的独立数据库，不向演示库写测试记录。测试数据库名保存在 `docs/evidence/test_database.txt`，检查完成后可在 SQL Server 中删除该独立库。浏览器检查另外需要 `pip install playwright` 和 Microsoft Edge，在服务运行时执行 `python scripts/verify_ui.py`。
 
-修订前验证记录：64 项测试通过；8 个主要页面正常加载，390 像素窄屏和快速切换页面时的延迟响应检查通过。10 万行临时表实验中，指定查询预热后六次执行的中位时间由 16.838 ms 降为 0.263 ms；该数值对应本机单会话实验。备份演练使用完整、差异、日志三段恢复，恢复后人数、订单数、结算额、工时及补贴金额一致。这些历史结果不覆盖2026-11-17五项逻辑修复、后端七项功能修复及新增回归测试，修复说明见 `docs/五项逻辑修复说明.md` 和 `docs/后端功能修复说明.md`。
+当前验证结果：65 项测试通过；12 个业务页面正常加载，390 像素窄屏和快速切换页面时的延迟响应检查通过。10 万行临时表实验中，指定查询预热后六次执行的中位时间由 16.838 ms 降为 0.263 ms；该数值对应本机单会话实验。备份演练使用完整、差异、日志三段恢复，恢复后人数、订单数、结算额、工时及补贴金额一致。
 
 ## 材料与版本管理
 
 课程报告和答辩 PPT 位于上一级的 `课程设计报告`。详细技术说明见 `docs/设计与验证说明.md`，交付对照见 `docs/任务与评分对照.md`。前期业务分析中的独立角色、角色关联、当前绑定、绑定历史、告警关联和响应等级配置等对象，分别通过角色枚举、有效期绑定记录、事件外键和事件时限快照表达，实际数据库对象以数据字典和 SQL 为准。
 
-本项目使用本地 Git 保存实际文件版本。成员信息和任务分工按要求留空；个人报告需在分工确定后选用本人实际参与的内容。报告目录已提供约五分钟的无声系统录屏和发言脚本，可作为录制底片。会议记录、全员发言的答辩录像、教师提问与反馈，按实际活动补入对应目录。
+本仓库包含 Git 历史，版本与修复记录见 `docs/management/版本记录.txt`、`docs/management/最终版变更总览_20261117.md` 和 `docs/management/修复记录_20261117.md`。成员信息和任务分工按要求留空；个人报告需在分工确定后选用本人实际参与的内容。报告目录已提供约五分钟的无声系统录屏和发言脚本，可作为录制底片。会议记录、全员发言的答辩录像、教师提问与反馈，按实际活动补入对应目录。

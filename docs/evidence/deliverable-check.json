@@ -76,5 +76,16 @@
     "小组会议记录",
     "全员发言答辩录像",
     "教师提问与反馈"
-  ]
+  ],
+  "recheck_20261117": {
+    "tests": 65,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "time_seconds": 46.02,
+    "python": "3.11.9 (project venv)",
+    "environment": "SQL Server 2025 Express 17.0.1000.7",
+    "timestamp": "2026-11-17T15:54:36+08:00",
+    "note": "复核修复后的回归结果；automated_tests 保留 2026-11-15 快照。报告/PPT 的 sha256 仍指 11-15 版本，改动文档后需重新导出再核对。"
+  }
 }

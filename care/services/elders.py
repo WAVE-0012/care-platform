@@ -57,7 +57,6 @@ def create(db, user, data):
 
 def update(db, user, elder_id, data):
     require_role(user, "admin", "community")
-    db.one("SELECT id FROM elderly WITH(UPDLOCK,HOLDLOCK) WHERE id=?", elder_id)
     elder = check_elderly(db, user, elder_id)
     community_id = int(data.get("community_id", elder["community_id"]))
     # 迁入社区必须存在；当前社区管理员负责移交，历史订单保留原归属。
@@ -68,8 +67,8 @@ def update(db, user, elder_id, data):
         "UPDATE elderly SET address=?,community_id=?,longitude=?,latitude=?,living_alone=?,disabled=?,low_income=? WHERE id=?",
         data.get("address", elder["address"]),
         community_id,
-        data.get("longitude", elder["longitude"]),
-        data.get("latitude", elder["latitude"]),
+        data.get("longitude", community["longitude"]),
+        data.get("latitude", community["latitude"]),
         data.get("living_alone", elder["living_alone"]),
         data.get("disabled", elder["disabled"]),
         data.get("low_income", elder["low_income"]),
@@ -91,7 +90,6 @@ def assess(db, user, elder_id, data):
     assessed_on = date.fromisoformat(data["assessed_on"])
     if assessed_on > date.today():
         raise BusinessError("评估日期不能晚于今天")
-    db.one("SELECT id FROM elderly WITH(UPDLOCK,HOLDLOCK) WHERE id=?", elder_id)
     assessment_id = db.insert(
         "INSERT assessment(elderly_id,scale,score,ability_level,assessor_id,assessed_on,valid_until) VALUES(?,?,?,?,?,?,?)",
         elder_id,
@@ -102,7 +100,11 @@ def assess(db, user, elder_id, data):
         assessed_on,
         data["valid_until"],
     )
-    # 补录记录不一定是当前评估，由统一过程按最新评估判断计划资格。
+    db.execute(
+        "UPDATE p SET status='paused' FROM care_plan p JOIN service_package k ON k.id=p.package_id WHERE p.elderly_id=? AND p.status='active' AND k.ability_level<>?",
+        elder_id,
+        data["ability_level"],
+    )
     db.call("sp_expire_services")
     db.audit("assessment", assessment_id, "create", user["id"], "完成能力评估")
     return {"id": assessment_id}

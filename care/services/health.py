@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from care.security import BusinessError, check_community, check_elderly, require_role
 
@@ -28,15 +27,6 @@ def upload(db, user, records):
         raise BusinessError("每次上传1至500条体征记录")
     ids = []
     for data in records:
-        try:
-            value = Decimal(str(data["value"]))
-            if not value.is_finite():
-                raise InvalidOperation
-            value = value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-            if abs(value) > Decimal("999999.99"):
-                raise InvalidOperation
-        except InvalidOperation:
-            raise BusinessError("指标值须为有效数字，按两位小数保存且不能超出数据库范围") from None
         collected = datetime.fromisoformat(data["collected_at"])
         if collected > datetime.now():
             raise BusinessError("采集时间不能晚于当前时间")
@@ -52,33 +42,31 @@ def upload(db, user, records):
         if not binding:
             raise BusinessError("设备在该采集时间没有绑定老人")
         check_elderly(db, user, binding["elderly_id"])
-        # 先按采集业务身份查历史记录，迁移后的新规则不能改变重传身份。
-        existing = db.one(
-            "SELECT v.id,v.value FROM vital v JOIN device_binding b ON b.id=v.binding_id "
-            "JOIN metric_rule r ON r.id=v.rule_id WHERE b.device_id=? AND v.collected_at=? AND r.metric=?",
-            data["device_id"],
-            collected,
+        rule = db.one(
+            "SELECT * FROM metric_rule WHERE community_id=? AND metric=?",
+            binding["community_id"],
             data["metric"],
         )
+        if rule is None:
+            raise BusinessError("该社区未配置此指标")
+        existing = db.one(
+            "SELECT id,value FROM vital WHERE binding_id=? AND rule_id=? AND collected_at=?",
+            binding["id"],
+            rule["id"],
+            collected,
+        )
         if existing:
-            if existing["value"] != value:
+            if float(existing["value"]) != float(data["value"]):
                 raise BusinessError("同一采集记录已存在不同数值，请核对设备数据")
             ids.append(existing["id"])
         else:
-            rule = db.one(
-                "SELECT * FROM metric_rule WHERE community_id=? AND metric=?",
-                binding["community_id"],
-                data["metric"],
-            )
-            if rule is None:
-                raise BusinessError("该社区未配置此指标")
             ids.append(
                 db.insert(
                     "INSERT vital(binding_id,rule_id,collected_at,value,source) VALUES(?,?,?,?,?)",
                     binding["id"],
                     rule["id"],
                     collected,
-                    value,
+                    data["value"],
                     "模拟设备",
                 )
             )

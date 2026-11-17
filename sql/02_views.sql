@@ -69,7 +69,7 @@ WHERE l.review_status='pending' AND l.checkout_at IS NOT NULL;
 GO
 -- D 健康与应急
 CREATE OR ALTER VIEW v_vital_history AS
-SELECT v.id,b.device_id,b.elderly_id,e.name elderly_name,r.community_id,r.metric,r.unit,
+SELECT v.id,b.device_id,b.elderly_id,e.name elderly_name,e.community_id,r.metric,r.unit,
        v.collected_at,v.received_at,v.value,v.abnormal,v.confirmation,r.lower_bound,r.upper_bound
 FROM vital v JOIN device_binding b ON b.id=v.binding_id JOIN elderly e ON e.id=b.elderly_id
 JOIN metric_rule r ON r.id=v.rule_id;
@@ -146,6 +146,7 @@ RETURNS TABLE AS RETURN (
     FROM service_order o CROSS APPLY dbo.fn_eligibility(o.elderly_id,o.item_id,CAST(o.scheduled_at AS date)) g
     JOIN service_item i ON i.id=o.item_id JOIN worker_skill k ON k.item_id=o.item_id
     JOIN worker w ON w.id=k.worker_id AND w.status='active'
+        AND w.trained_on IS NOT NULL AND w.trained_on<=CAST(o.scheduled_at AS date)
     JOIN agency ag ON ag.id=w.agency_id AND ag.active=1
     JOIN worker_area r ON r.worker_id=w.id AND r.community_id=o.community_id
     JOIN shift s ON s.worker_id=w.id AND s.status='published' AND
