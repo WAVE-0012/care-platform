@@ -15,6 +15,11 @@
     "audit"
   ],
   "javascript_errors": [],
+  "themes": [
+    "warm",
+    "green"
+  ],
+  "theme_toggle": "passed",
   "mobile": {
     "viewport": "390x844",
     "scrollWidth": 390,
