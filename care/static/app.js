@@ -401,7 +401,9 @@ async function start() {
         const icon = NAV_ICONS[key]
           ? `<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${NAV_ICONS[key]}</svg>`
           : '';
-        return `<a class="nav-item" href="#${key}" data-section="${key}" title="${meta.title}">${icon}<span>${meta.title}</span></a>`;
+        const badge = ['orders', 'events'].includes(key)
+          ? `<span class="nav-badge" data-badge="${key}" hidden></span>` : '';
+        return `<a class="nav-item" href="#${key}" data-section="${key}" title="${meta.title}">${icon}<span>${meta.title}</span>${badge}</a>`;
       }).join('');
   }).join('');
   await navigate();
@@ -419,7 +421,8 @@ const levels = {
   3: '三级'
 };
 
-function badge(value, kind = '') {  const warning = ['pending', 'ineligible', 'offered', 'confirming', 'street', 'civil', 'open',
+function badge(value, kind = '') {
+  const warning = ['pending', 'ineligible', 'offered', 'confirming', 'street', 'civil', 'open',
   'review'];
   const neutral = ['cancelled', 'ended', 'paused', 'invalid', 'terminated'];
   const error = ['exception', 'failed', 'rejected', 'manual'];
@@ -511,6 +514,14 @@ async function renderOverview() {
   const due = Array.isArray(summary.reassessment) ? summary.reassessment.length : 0;
   const eventCount = Number(summary.events || 0);
   const todoTotal = eventCount + waiting + due;
+  const setNavBadge = (key, value) => {
+    const el = document.querySelector(`.nav-badge[data-badge="${key}"]`);
+    if (!el) return;
+    el.textContent = value > 0 ? value.toLocaleString('zh-CN') : '';
+    el.hidden = value <= 0;
+  };
+  setNavBadge('orders', waiting);
+  setNavBadge('events', eventCount);
   const completed = Number(summary.orders.completed || 0);
   const elders = Number(summary.elders || 0);
   const subsidy = Number(summary.subsidy || 0);
@@ -556,15 +567,23 @@ async function renderOverview() {
   const totalOrders = trend.reduce((sum, item) => sum + Number(item.orders || 0), 0);
   const totalCompleted = trend.reduce((sum, item) => sum + Number(item.completed || 0), 0);
   const totalRate = totalOrders ? Math.round(totalCompleted / totalOrders * 100) : 0;
+  const latest = chartRows.length ? Number(chartRows[chartRows.length - 1].orders || 0) : 0;
+  const previous = chartRows.length > 1 ? Number(chartRows[chartRows.length - 2].orders || 0) : 0;
+  const delta = previous > 0 ? Math.round((latest - previous) / previous * 1000) / 10 : null;
+  const dailyAvg = (latest / 30).toFixed(1);
+  const deltaText = delta === null ? '暂无环比'
+    : `环比上月 ${delta >= 0 ? '＋' : '−'}${Math.abs(delta).toFixed(1)}%`;
+  const deltaClass = delta !== null && delta < 0 ? ' is-down' : '';
 
   const chartMarkup = chartRows.length
-    ? chartRows.map(item => {
+    ? chartRows.map((item, idx) => {
       const orders = Math.max(0, Number(item.orders || 0));
       const done = Math.max(0, Number(item.completed || 0));
       const orderHeight = orders ? Math.max(4, Math.round(orders / maxOrders * 100)) : 0;
       const doneHeight = done ? Math.max(4, Math.round(done / maxOrders * 100)) : 0;
       const month = String(item.month || '—');
-      return `<div class="trend-chart-column" title="${escapeHtml(month)}：预约 ${orders} 单，已完成 ${done} 单">
+      return `<div class="trend-chart-column${idx === chartRows.length - 1 ? ' is-current' : ''}" title="${escapeHtml(month)}：预约 ${orders} 单，已完成 ${done} 单">
+        <span class="trend-value">${orders}</span>
         <div class="trend-bars" aria-hidden="true">
           <span class="trend-bar trend-bar--orders" style="height:${orderHeight}%"></span>
           <span class="trend-bar trend-bar--completed" style="height:${doneHeight}%"></span>
@@ -581,6 +600,7 @@ async function renderOverview() {
       title: '应急处置跟进',
       description: '响应、到场和处置结果待记录',
       count: eventCount,
+      cta: '立即处置',
       href: '#events',
       icon: '<path d="M12 3 3.3 19h17.4L12 3Z"/><path d="M12 9v4M12 16h.01"/>'
     },
@@ -589,6 +609,7 @@ async function renderOverview() {
       title: '服务调度与接单',
       description: '待派单、待接单和待确认的订单',
       count: waiting,
+      cta: '去派单',
       href: '#orders',
       icon: '<path d="M7 3.5h7l4 4v13H6v-15a2 2 0 0 1 1-2Z"/><path d="M14 3.5v4h4M9 13h6M9 16.5h4"/>'
     },
@@ -597,6 +618,7 @@ async function renderOverview() {
       title: '评估到期与复评',
       description: '七日内到期或尚未评估的老人档案',
       count: due,
+      cta: '去复评',
       href: '#elders',
       icon: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 9h16M8 13h3M8 16h6"/>'
     }
@@ -656,7 +678,7 @@ async function renderOverview() {
                 <small>${task.description}</small>
               </span>
               <span class="task-count">${task.count.toLocaleString('zh-CN')}</span>
-              <span class="task-arrow" aria-hidden="true">›</span>
+              <span class="task-cta">${task.cta} →</span>
             </a>`).join('')}
         </div>
         ${allowed('admin', 'community', 'family', 'elderly') ? `
@@ -691,6 +713,7 @@ async function renderOverview() {
           <div><span>已完成</span><strong>${totalCompleted.toLocaleString('zh-CN')}</strong></div>
           <div><span>完成率</span><strong>${totalRate}%</strong></div>
         </div>
+        <p class="trend-cmeta"><span>环比上月 <strong class="${deltaClass}">${deltaText.replace('环比上月 ', '')}</strong></span><span>日均 ${dailyAvg} 单</span></p>
         <p class="panel-note">统计口径：按预约月份归集；完成率 = 已完成 ÷ 预约订单。</p>
       </section>
     </div>
