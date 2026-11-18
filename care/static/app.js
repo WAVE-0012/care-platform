@@ -254,7 +254,7 @@ const sections = {
       ['id', '事件编号'],
       ['elderly_name', '老人'],
       ['source', '来源'],
-      ['level', '等级'],
+      ['level', '等级', 'level'],
       ['occurred_at', '发生时间', 'date'],
       ['responded_at', '响应时间', 'date'],
       ['status', '处置进度', 'badge']
@@ -299,7 +299,7 @@ const sections = {
       ['id', '通知编号'],
       ['event_id', '事件'],
       ['recipient', '接收人'],
-      ['stage', '通知阶段'],
+      ['stage', '通知阶段', 'stage'],
       ['attempts', '尝试次数'],
       ['status', '发送状态', 'badge']
     ]
@@ -407,8 +407,19 @@ async function start() {
   await navigate();
 }
 
-function badge(value, kind = '') {
-  const warning = ['pending', 'ineligible', 'offered', 'confirming', 'street', 'civil', 'open',
+/* 枚举中文映射：数据库里存英文/数字，界面必须显示中文业务含义 */
+const stages = {
+  created: '事件创建',
+  escalated: '升级通知',
+  arrival: '到场超时'
+};
+const levels = {
+  1: '一级',
+  2: '二级',
+  3: '三级'
+};
+
+function badge(value, kind = '') {  const warning = ['pending', 'ineligible', 'offered', 'confirming', 'street', 'civil', 'open',
   'review'];
   const neutral = ['cancelled', 'ended', 'paused', 'invalid', 'terminated'];
   const error = ['exception', 'failed', 'rejected', 'manual'];
@@ -422,6 +433,8 @@ function cell(row, key, type) {
   const value = row[key];
   if (value === null || value === undefined) return '<span class="muted">—</span>';
   if (type === 'badge' || type === 'quality') return badge(value, type);
+  if (type === 'stage') return escapeHtml(stages[value] || value);
+  if (type === 'level') return escapeHtml(levels[value] || `第${value}级`);
   if (type === 'money') return '¥ ' + money(value);
   if (type === 'date') return escapeHtml(dateText(value));
   if (type === 'month') return escapeHtml(value.slice(0, 7));

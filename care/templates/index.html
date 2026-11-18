@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>安邻社区居家养老服务平台</title>
+  <script src="/static/theme.js"></script>
   <link rel="stylesheet" href="/static/style.css">
   <script defer src="/static/app.js"></script>
 </head>
@@ -11,7 +12,13 @@
   <section id="login-screen" class="login-screen">
     <header class="login-topbar">
       <div class="login-topbar-brand"><span class="brand-mark">安</span><span>安邻社区居家养老服务平台</span></div>
-      <span class="login-env">本地演示环境</span>
+      <div class="login-topbar-meta">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="切换界面配色，当前暖茶" title="切换暖茶 / 浅绿配色">
+          <span class="theme-toggle-dot" aria-hidden="true"></span>
+          <span class="theme-toggle-label">暖茶</span>
+        </button>
+        <span class="login-env">本地演示环境</span>
+      </div>
     </header>
     <div class="login-body">
       <aside class="login-art" aria-label="社区居家养老照护场景">
@@ -65,6 +72,10 @@
         </div>
       </div>
       <div class="topbar-meta">
+        <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false" aria-label="切换界面配色，当前暖茶" title="切换暖茶 / 浅绿配色">
+          <span class="theme-toggle-dot" aria-hidden="true"></span>
+          <span class="theme-toggle-label">暖茶</span>
+        </button>
         <span class="env-tag">演示环境</span>
         <time id="today"></time>
         <span class="top-divider"></span>
